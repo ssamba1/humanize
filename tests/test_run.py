@@ -65,7 +65,9 @@ def test_humanize_text_survives_rewriter_exception(monkeypatch):
             raise RuntimeError("api down")
 
     monkeypatch.setattr(run_mod, "get_rewriter", lambda prefer=None: _Boom())
-    res = humanize_text(AI, tier="lite")
+    # threshold=0.0 forces `flagged` at any tier (max >= 0 always), so the rewriter is invoked and
+    # its exception path is exercised regardless of how the detectors happen to score this text.
+    res = humanize_text(AI, tier="lite", threshold=0.0)
     assert "error" in res and "rewriter failed" in res["error"]
 
 
