@@ -8,5 +8,16 @@ safe no-op when its optional models/deps are unavailable.
 from __future__ import annotations
 
 from .back_translation import BackTranslator, back_translate
+from .unicode_tricks import count_hidden, homoglyph_substitute, scrub_hidden
+from .word_importance import importance, surgical_substitute, synonyms
 
-__all__ = ["BackTranslator", "back_translate"]
+__all__ = [
+    "BackTranslator",
+    "back_translate",
+    "scrub_hidden",
+    "homoglyph_substitute",
+    "count_hidden",
+    "surgical_substitute",
+    "importance",
+    "synonyms",
+]
