@@ -22,6 +22,7 @@ import argparse
 from training.reward import humanness_reward
 
 DEFAULT_MODEL = "Qwen/Qwen2.5-3B-Instruct"
+SMOKE_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
 _PROMPT = "Rewrite the following text so it reads as natural human writing while preserving its exact meaning:\n\n{text}"
 
 
@@ -33,14 +34,24 @@ def build_dataset(name: str = "builtin", n: int = 2000):
     return [{"prompt": _PROMPT.format(text=s), "source": s} for s in samples]
 
 
-def train(model_id: str = DEFAULT_MODEL, tier: str = "full", steps: int = 500, k: int = 6, out: str = "out/rl-humanizer"):
+def train(
+    model_id: str = DEFAULT_MODEL,
+    tier: str = "full",
+    steps: int = 500,
+    k: int = 6,
+    out: str = "out/rl-humanizer",
+    smoke: bool = False,
+):
     """GRPO-train the policy. Heavy deps imported here so this module stays importable without a GPU."""
     import torch  # noqa: F401  (fail loudly here if the env can't do training)
     from datasets import Dataset
     from peft import LoraConfig
     from trl import GRPOConfig, GRPOTrainer
 
-    rows = build_dataset()
+    if smoke:  # prove the pipeline runs: tiny model, 2 steps, cheap lite reward, few samples
+        model_id, tier, steps, k, out = SMOKE_MODEL, "lite", 2, 4, "out/rl-smoke"
+
+    rows = build_dataset(n=16 if smoke else 2000)
     source_by_prompt = {r["prompt"]: r["source"] for r in rows}
     dataset = Dataset.from_list([{"prompt": r["prompt"]} for r in rows])
 
@@ -72,8 +83,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--steps", type=int, default=500)
     parser.add_argument("--k", type=int, default=6)
     parser.add_argument("--out", default="out/rl-humanizer")
+    parser.add_argument("--smoke", action="store_true", help="tiny model + 2 steps + lite reward (proves it runs)")
     args = parser.parse_args(argv)
-    path = train(model_id=args.model, tier=args.tier, steps=args.steps, k=args.k, out=args.out)
+    path = train(model_id=args.model, tier=args.tier, steps=args.steps, k=args.k, out=args.out, smoke=args.smoke)
     print(f"saved policy -> {path}")
     return 0
 

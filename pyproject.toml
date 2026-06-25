@@ -89,6 +89,7 @@ humanize-verify = "humanize.scripts.verify:main"
 humanize-prove = "eval.prove:main"
 humanize-sentences = "humanize.scripts.sentences:main"
 humanize-mcp = "humanize.mcp_server:main"
+humanize-distill = "training.distill:main"
 
 [tool.setuptools]
 packages = [

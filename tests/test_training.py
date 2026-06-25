@@ -39,3 +39,33 @@ def test_distill_drops_flagged_or_low_similarity(monkeypatch):
 
     monkeypatch.setattr(run_mod, "humanize_text", lambda text, **k: {"final": "x", "flagged": False, "similarity": 0.2})
     assert distill("builtin", n=3, tier="lite")["kept"] == 0
+
+
+def test_dpo_build_pairs(monkeypatch):
+    import training.distill as d
+
+    monkeypatch.setattr(
+        d, "distill", lambda *a, **k: {"rows": [{"prompt": "p", "source": "ai text", "humanized": "human text"}], "kept": 1, "total": 1}
+    )
+    from training.dpo_humanizer import build_pairs
+
+    out = build_pairs("builtin", n=1, tier="lite")
+    assert out["pairs"][0]["chosen"] == "human text"
+    assert out["pairs"][0]["rejected"] == "ai text"
+
+
+def test_dpo_smoke_pairs_are_valid():
+    from training.dpo_humanizer import _smoke_pairs
+
+    pairs = _smoke_pairs(3)
+    assert len(pairs) == 3
+    for p in pairs:
+        assert p["chosen"] != p["rejected"] and "prompt" in p
+
+
+def test_rl_build_dataset_n():
+    from training.rl_humanizer import build_dataset
+
+    rows = build_dataset("builtin", n=4)
+    assert len(rows) == 4
+    assert all("prompt" in r and "source" in r for r in rows)
