@@ -20,6 +20,25 @@ python -m training.rl_humanizer --model Qwen/Qwen2.5-3B-Instruct --tier full --s
 LoRA on a 3-4B model fits ~16-24GB VRAM; StealthRL reports a usable policy from ~10K samples. After
 training, use the saved policy as the rewriter backend (replaces the API loop; runs local, no key).
 
+## The best stack (beyond plain GRPO) — staged, multi-objective
+
+Plain GRPO-vs-one-detector is the floor. The strongest pipeline for us:
+
+1. **Distill our own loop (the edge).** `python -m training.distill --dataset raid --n 2000 --tier full`
+   runs our Claude + detector-feedback loop (a strong teacher), keeps outputs that pass the ensemble +
+   keep meaning, and writes SFT pairs. Most repos have no teacher this good.
+2. **SFT** a small model (Qwen2.5-0.5B–3B) on that JSONL → a fast model that already humanizes well.
+3. **GRPO / DPO refine** (`rl_humanizer.py`) against the **broad, hard** ensemble (RADAR + Binoculars +
+   commercial) with the **multi-objective reward** (`reward.humanness_reward` = evasion + meaning +
+   fluency) — the impossibility-triangle win competitors miss (they reward only evasion → quality rots).
+4. **Keep the inference loop on top** for the hard cases.
+5. **Adversarial curriculum (optional):** retrain detectors on the humanizer's outputs and repeat →
+   stays ahead of *future* detectors (StealthRL's transfer property, amplified).
+
+Why this beats StealthRL-as-is: (a) teacher distillation gives a strong init RL-from-scratch lacks,
+(b) the reward is multi-objective (keeps quality, not just evasion), (c) the reward ensemble is the
+broadest + hardest (incl. RADAR + commercial), maximizing transfer to unseen detectors.
+
 ## Variants (all in the literature, same reward plug)
 - **StealthRL** — GRPO vs OSS-detector ensemble (RoBERTa/Fast-DetectGPT/Binoculars/MAGE). `--tier full`.
 - **AuthorMist** — RL vs the *commercial* detectors via their APIs as reward. `--tier commercial`.
