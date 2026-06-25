@@ -45,6 +45,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     strategies = [s.strip() for s in args.strategies.split(",") if s.strip()]
+    unknown = [s for s in strategies if s not in STRATEGIES]
+    if unknown:
+        parser.error(f"unknown strategy/strategies: {', '.join(unknown)} (choose from {', '.join(STRATEGIES)})")
     by_strategy = run(args.dataset, args.n, args.tier, args.threshold, strategies)
     report = render(by_strategy, args.threshold)
     print(report)

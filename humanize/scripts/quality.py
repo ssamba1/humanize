@@ -68,6 +68,7 @@ def _cosine_similarity(a: str, b: str) -> float | None:
         import numpy as np
 
         emb = model.encode([a, b], normalize_embeddings=True)
+        # Raw cosine: the 0.76 bar (P-SP threshold) is defined on this scale, so do NOT rescale.
         return float(np.dot(emb[0], emb[1]))
     except Exception:
         return None
@@ -77,8 +78,8 @@ def similarity(a: str, b: str) -> float:
     """Semantic similarity in [0, 1]. Cosine of embeddings if available, else token overlap."""
     cos = _cosine_similarity(a, b)
     if cos is not None:
-        # Map cosine [-1, 1] -> [0, 1]; in practice MiniLM sims are already >= 0.
-        return max(0.0, min(1.0, (cos + 1.0) / 2.0 if cos < 0 else cos))
+        # Clamp raw cosine into [0, 1]; the 0.76 bar lives on this raw-cosine scale.
+        return max(0.0, min(1.0, cos))
     return token_overlap(a, b)
 
 

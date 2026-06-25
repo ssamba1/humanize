@@ -35,7 +35,7 @@ DEFAULT_THRESHOLD = 0.30
 def score_text(text: str, tier: str = "full", threshold: float = DEFAULT_THRESHOLD) -> dict:
     """Score ``text`` with the available detector ensemble; return the result dict."""
     detectors = load_detectors(tier)
-    scores: dict[str, float] = {}
+    scores: dict[str, float | None] = {}
     for d in detectors:
         try:
             scores[d.name] = round(float(d.score(text)), 4)
@@ -93,6 +93,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     result = score_text(text, tier=args.tier, threshold=args.threshold)
+    # Log which tier actually ran to stderr (stdout stays pure JSON for the skill to parse).
+    print(f"[humanize-score] tier requested={args.tier} ran={result['tier']}", file=sys.stderr)
     # ensure_ascii=True: detector error strings may carry non-ASCII; never crash a Windows stdout.
     print(json.dumps(result, ensure_ascii=True, indent=2))
     return 0

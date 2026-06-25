@@ -56,3 +56,21 @@ def test_run_returns_all_strategies():
     by = run("builtin", 3, "lite", 0.30, ["noop", "single_pass", "full_loop"])
     assert set(by.keys()) == {"noop", "single_pass", "full_loop"}
     assert all(len(v) == 3 for v in by.values())
+
+
+def test_full_loop_caps_iterations():
+    text = load_samples("builtin", 1)[0]
+    res = full_loop(text, tier="lite", max_iters=2)
+    assert res.iterations <= 2
+
+
+def test_unknown_dataset_falls_back_to_builtin():
+    # An unrecognized name must not crash — it degrades to the packaged samples.
+    samples = load_samples("does-not-exist", 2)
+    assert len(samples) == 2
+    assert all(isinstance(s, str) and s for s in samples)
+
+
+def test_builtin_repeats_to_satisfy_large_n():
+    samples = load_samples("builtin", 12)
+    assert len(samples) == 12

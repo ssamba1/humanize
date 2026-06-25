@@ -77,6 +77,12 @@ def load_detectors(tier: Tier = "full") -> list[Detector]:
         for d in all_detectors()
         if _tier_at_most(d.tier, tier) and d.available()
     ]
+    if not selected:
+        # Guarantee the documented invariant: the lite heuristic is dependency-free and always
+        # available, so the registry never returns an empty list (which would silently zero-score).
+        from .perplexity_burstiness import PerplexityBurstinessDetector
+
+        selected = [PerplexityBurstinessDetector()]
     return selected
 
 

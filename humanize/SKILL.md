@@ -79,12 +79,13 @@ iterations). Load `references/prompt-rubric.md` before your first rewrite.
      add concrete specifics, remove formulaic transitions ("Moreover", "Furthermore", "Overall").
    Preserve meaning and **every sentinel**. Produce the new masked text, then go to step 3.
 
-6. **Restore + report.** Once stopped, restore the protected spans:
+6. **Restore + report.** Once stopped, restore the protected spans — substitute each sentinel
+   back to its original using the `mapping` from step 2:
    ```bash
-   python -m humanize.scripts.preserve  # (use restore: see note below)
+   python -m humanize.scripts.preserve --restore --mapping '<mapping json from step 2>' "<final masked text>"
    ```
-   Substitute each sentinel back to its original (the `mapping` from step 2) to get the final
-   text. Then present:
+   (or `--mapping-file path.json`). This prints the final text with every `⟦HZxxxx⟧` replaced.
+   Then present:
    - The final humanized text.
    - A **before/after table**: each detector's P(AI) at iteration 0 vs final, the `max` proxy,
      final similarity, and the number of iterations used.

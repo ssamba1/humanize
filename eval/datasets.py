@@ -7,6 +7,7 @@ runs (and tests pass) with zero downloads.
 Supported names:
   - ``hc3``   -> Hello-SimpleAI/HC3 ChatGPT answers
   - ``raid``  -> liamdugan/raid machine-generated split
+  - ``mage``  -> yaful/MAGE machine-generated (label 0) samples
   - ``builtin`` (default fallback) -> packaged sample paragraphs
 """
 
@@ -99,7 +100,22 @@ def load_samples(dataset: str = "builtin", n: int = 5) -> list[str]:
                 if len(texts) >= n:
                     break
             return texts[:n] or _builtin(n)
+
+        if name == "mage":
+            ds = load_dataset("yaful/MAGE", split="test", streaming=True)
+            texts = []
+            for row in ds:
+                txt = row.get("text")
+                # MAGE label convention: 0 == machine-generated (the samples we want to humanize).
+                if txt and row.get("label", 1) == 0 and len(txt.split()) > 30:
+                    texts.append(txt.strip())
+                if len(texts) >= n:
+                    break
+            return texts[:n] or _builtin(n)
     except Exception:
         return _builtin(n)
 
+    import sys
+
+    print(f"[humanize-eval] unknown dataset '{dataset}'; using builtin samples.", file=sys.stderr)
     return _builtin(n)

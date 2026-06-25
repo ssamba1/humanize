@@ -139,7 +139,12 @@ class PerplexityBurstinessDetector:
         if self._torch_ready():
             try:
                 return clamp01(self._full_score(text))
-            except Exception:
-                # Any model/load failure falls back to the always-works heuristic.
-                pass
+            except Exception as exc:  # model/load failure -> heuristic, but say so (don't fail silently)
+                import sys
+
+                print(
+                    f"[humanize] perplexity_burstiness full path failed ({type(exc).__name__}: "
+                    f"{str(exc)[:120]}); falling back to lite heuristic.",
+                    file=sys.stderr,
+                )
         return lite_score(text)

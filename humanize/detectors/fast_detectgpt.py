@@ -37,7 +37,6 @@ class FastDetectGPTDetector:
         return True
 
     def _load(self):
-        import torch  # noqa: F401
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
         if FastDetectGPTDetector._model is None:

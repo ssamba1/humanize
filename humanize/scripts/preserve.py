@@ -35,8 +35,19 @@ _PATTERNS: list[tuple[str, re.Pattern]] = [
     ("url", re.compile(r"https?://\S+|doi:\s*\S+", re.IGNORECASE)),
     # Quoted spans (straight or curly double quotes)
     ("quote", re.compile(r"[\"“][^\"”]{1,400}[\"”]")),
-    # Numbers with optional units/percent/currency/decimals/commas: 3.14, 1,000, 42%, $5, 10kg
-    ("number", re.compile(r"[$€£]?\d[\d,]*(?:\.\d+)?\s*(?:%|kg|km|m|cm|mm|g|mol|°[CF]?|years?|days?)?")),
+    # Significant numbers only — avoid locking bare single digits ("5 days" locks via the unit, but
+    # a lone "5" does not). Matches currency, decimals, comma-grouped thousands, number+unit, and
+    # integers of 2+ digits: $5, 3.14, 1,000, 42%, 10kg, 2020.
+    (
+        "number",
+        re.compile(
+            r"[$€£]\s?\d[\d,]*(?:\.\d+)?"  # currency
+            r"|\b\d[\d,]*\.\d+\b"  # decimals
+            r"|\b\d{1,3}(?:,\d{3})+\b"  # comma-grouped thousands
+            r"|\b\d+\s*(?:%|kg|km|cm|mm|mol|°[CF]?|years?|days?|hours?|minutes?)\b"  # number + unit
+            r"|\b\d{2,}\b"  # standalone integers of 2+ digits
+        ),
+    ),
 ]
 
 
@@ -115,12 +126,40 @@ def restore(masked: str, mapping: dict[str, str]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI: ``python -m humanize.scripts.preserve "text"`` prints masked text + mapping JSON."""
+    """CLI for lock (default) and restore.
+
+    Lock:    ``python -m humanize.scripts.preserve "text"`` -> JSON {masked, mapping}
+    Restore: ``python -m humanize.scripts.preserve --restore --mapping '<json>' "masked text"``
+             (or ``--mapping-file path.json``) -> the restored text
+    """
+    import argparse
     import json
     import sys
 
-    args = argv if argv is not None else sys.argv[1:]
-    text = args[0] if args else sys.stdin.read()
+    try:  # best-effort UTF-8 stdout so restored text with unicode never crashes a cp1252 console
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
+    parser = argparse.ArgumentParser(prog="humanize.scripts.preserve")
+    parser.add_argument("text", nargs="?", help="text to lock, or masked text to restore")
+    parser.add_argument("--restore", action="store_true", help="restore sentinels using --mapping")
+    parser.add_argument("--mapping", help="JSON object {sentinel: original} for --restore")
+    parser.add_argument("--mapping-file", help="path to a JSON mapping file for --restore")
+    args = parser.parse_args(argv)
+
+    text = args.text if args.text is not None else sys.stdin.read()
+
+    if args.restore:
+        mapping: dict[str, str] = {}
+        if args.mapping_file:
+            with open(args.mapping_file, encoding="utf-8") as fh:
+                mapping = json.load(fh)
+        elif args.mapping:
+            mapping = json.loads(args.mapping)
+        print(restore(text, mapping))
+        return 0
+
     masked, mapping = lock(text)
     # ensure_ascii=True so the U+27E6 sentinels survive a non-UTF-8 (Windows cp1252) stdout;
     # they decode back to the real characters when the skill json-parses this output.

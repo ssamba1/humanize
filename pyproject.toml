@@ -31,7 +31,9 @@ full = [
     "spacy>=3.7",
 ]
 # Strongest proxy (Binoculars = 2x Falcon-7B). GPU recommended.
+# Includes `full` so torch/transformers are present — Binoculars needs them to run at all.
 heavy = [
+    "humanize-skill[full]",
     "bitsandbytes>=0.43",
     "accelerate>=0.30",
 ]
