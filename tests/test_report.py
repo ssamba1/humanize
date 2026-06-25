@@ -35,7 +35,12 @@ def test_bypass_rate_empty_is_zero():
     assert _bypass_rate([], 0.30) == 0.0
 
 
-def test_noop_never_bypasses_builtin():
-    # builtin samples are deliberately AI-flagged, so the identity strategy bypasses 0%.
+def test_noop_is_identity():
+    # noop never changes the text, so pre==post and similarity is perfect — true at any tier
+    # (the lite perplexity detector auto-upgrades to GPT-2 when torch is present, so the absolute
+    # bypass rate is environment-dependent and must not be asserted to an exact value).
     s = summarize(run("builtin", 3, "lite", 0.30, ["noop"]), 0.30)
-    assert s["strategies"]["noop"]["bypass_rate"] == 0.0
+    noop = s["strategies"]["noop"]
+    assert noop["mean_pre_max"] == noop["mean_post_max"]
+    assert noop["mean_similarity"] == 1.0
+    assert 0.0 <= noop["bypass_rate"] <= 1.0

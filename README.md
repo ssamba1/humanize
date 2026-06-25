@@ -101,9 +101,26 @@ ruff check .
 pytest -q
 ```
 
-CI runs the lite tier only (ruff + pytest, no model downloads) across Python 3.9/3.11/3.12. The
-full/heavy detector adapters are code-complete behind import guards; verify them on a machine with
-`torch`/model access via `pip install -e ".[full]"`.
+CI runs two jobs: a **lite** matrix (ruff + pytest, no model downloads) across Python
+3.9/3.11/3.12, and a **full-tier** job (Ubuntu, CPU torch + `.[full,eval]`) that loads the real
+RoBERTa / Fast-DetectGPT / GPT-2-perplexity detectors and runs the `torch`-gated tests in
+`tests/test_detectors_full.py`. The heavy tier (Binoculars) needs a GPU and is exercised
+manually.
+
+### Headless rewriter (optional)
+
+The skill uses the running Claude as the rewriter (no key). For a fully programmatic loop (eval,
+servers), `humanize.rewriter` adds optional hosted-LLM providers:
+
+```bash
+pip install -e ".[api]"      # anthropic + openai SDKs
+export ANTHROPIC_API_KEY=...  # or OPENAI_API_KEY
+```
+
+```python
+from humanize.rewriter import get_rewriter
+rw = get_rewriter()           # None if no SDK/key -> caller falls back to the scripted rewriter
+```
 
 ## Honest caveats
 
@@ -115,10 +132,17 @@ full/heavy detector adapters are code-complete behind import guards; verify them
 - **Ethics.** Detector false-positives disproportionately harm non-native writers; this exists as
   a research/eval harness and a defense against that, not a plagiarism or academic-dishonesty aid.
 
-## Out of scope (v1)
+## Deferred
 
-Local DPO/RL-against-ensemble training, commercial-detector API validation, a hosted-API rewriter,
-a web UI, back-translation/token-mixing modules, and marketplace publishing automation.
+Genuinely out of reach without GPUs, paid API keys, or a much larger surface — documented here
+rather than shipped unverified:
+
+- **Local DPO/RL-against-ensemble training** (the StealthRL/MASH "moat") — needs GPU training; the
+  hosted-rewriter loop is the training-free stand-in that's actually shippable.
+- **Commercial-detector API validation** (Originality.ai/Turnitin/ZeroGPT) — needs paid keys; the
+  local proxy ensemble is the offline approximation.
+- **Web UI** and **marketplace publishing automation** — out of scope for a CLI/skill.
+- **Back-translation / token-mixing** attack modules — candidate future detectors-vs-attacks work.
 
 ## License
 

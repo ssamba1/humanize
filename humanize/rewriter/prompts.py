@@ -1,0 +1,49 @@
+"""Prompt construction for the hosted-LLM rewriter.
+
+Turns a detector score result into a concrete, feedback-driven rewrite instruction following the
+same rubric the skill uses (references/prompt-rubric.md): raise burstiness + perplexity, vary
+sentence architecture, drop formulaic transitions, preserve meaning and every sentinel.
+"""
+
+from __future__ import annotations
+
+_SENTINEL_NOTE = (
+    "The text may contain opaque sentinels like ⟦HZ0003⟧. Carry every sentinel through UNCHANGED — "
+    "never modify, translate, split, reorder the characters of, or drop one."
+)
+
+_RUBRIC = (
+    "Rewrite the text so it reads as natural human writing while preserving its exact meaning:\n"
+    "- Vary sentence length aggressively (mix very short sentences with long, winding ones) to "
+    "raise burstiness.\n"
+    "- Replace predictable, formulaic phrasing with less expected, more specific word choices to "
+    "raise perplexity.\n"
+    "- Remove formulaic transitions (\"Moreover\", \"Furthermore\", \"Additionally\", \"Overall\", "
+    "\"In conclusion\").\n"
+    "- Vary sentence openings; avoid uniform structure.\n"
+    "- Keep all facts, numbers, citations, and named entities intact.\n"
+    f"- {_SENTINEL_NOTE}\n"
+    "Return ONLY the rewritten text, with no preamble, commentary, or quotes."
+)
+
+
+def _worst_detectors(score_result: dict, k: int = 3) -> list[tuple[str, float]]:
+    dets = score_result.get("detectors", {})
+    numeric = [(n, v) for n, v in dets.items() if isinstance(v, (int, float)) and "__error" not in n]
+    return sorted(numeric, key=lambda kv: kv[1], reverse=True)[:k]
+
+
+def build_rewrite_prompt(text: str, score_result: dict, threshold: float = 0.30) -> str:
+    """Build the rewrite instruction, naming the detectors currently flagging the text."""
+    worst = _worst_detectors(score_result)
+    if worst:
+        flagged = ", ".join(f"{name} (P(AI)={val:.2f})" for name, val in worst)
+        feedback = (
+            f"These local detectors still flag the text as AI-generated (target < {threshold:.2f}): "
+            f"{flagged}. Focus your changes on the signals they measure — especially sentence-length "
+            "variance (burstiness) and word predictability (perplexity)."
+        )
+    else:
+        feedback = f"Lower the AI-detection probability below {threshold:.2f}."
+
+    return f"{_RUBRIC}\n\n{feedback}\n\n--- TEXT ---\n{text}"

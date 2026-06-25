@@ -17,6 +17,7 @@ class MageDetector:
     tier = "full"
 
     _pipe = None
+    _warned = False
 
     def available(self) -> bool:
         try:
@@ -44,8 +45,22 @@ class MageDetector:
     def score(self, text: str) -> float:
         if not self.available() or not text.strip():
             return 0.5
-        pipe = self._load()
-        out = pipe(text)
+        try:
+            pipe = self._load()
+            out = pipe(text)
+        except Exception as exc:
+            # yaful/MAGE ships a config (int-valued id2label) that newer huggingface_hub rejects;
+            # rather than crash the ensemble, degrade this one detector to a neutral score.
+            if not MageDetector._warned:
+                import sys
+
+                print(
+                    f"[humanize] mage unavailable ({type(exc).__name__}: {str(exc)[:120]}); "
+                    "scoring 0.5 (neutral). Excluded from the ensemble signal.",
+                    file=sys.stderr,
+                )
+                MageDetector._warned = True
+            return 0.5
         scores = out[0] if isinstance(out[0], list) else out
         # MAGE label convention: "machine-generated" (or LABEL_0 in some exports) == AI.
         ai = next(

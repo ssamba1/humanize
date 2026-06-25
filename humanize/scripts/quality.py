@@ -76,6 +76,11 @@ def _cosine_similarity(a: str, b: str) -> float | None:
 
 def similarity(a: str, b: str) -> float:
     """Semantic similarity in [0, 1]. Cosine of embeddings if available, else token overlap."""
+    # Empty-input guard (both metrics agree): two empties are identical; empty-vs-nonempty is 0.
+    # Without this the embedding path returns a spurious non-zero cosine for "" vs "something".
+    a_empty, b_empty = not a.strip(), not b.strip()
+    if a_empty or b_empty:
+        return 1.0 if (a_empty and b_empty) else 0.0
     cos = _cosine_similarity(a, b)
     if cos is not None:
         # Clamp raw cosine into [0, 1]; the 0.76 bar lives on this raw-cosine scale.
