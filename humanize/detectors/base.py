@@ -54,15 +54,19 @@ def all_detectors() -> list[Detector]:
     from .binoculars import BinocularsDetector
     from .commercial import commercial_detectors
     from .fast_detectgpt import FastDetectGPTDetector
+    from .hc3_roberta import HC3RobertaDetector
     from .mage import MageDetector
     from .perplexity_burstiness import PerplexityBurstinessDetector
+    from .radar import RadarDetector
     from .roberta_openai import RobertaOpenAIDetector
 
     return [
         PerplexityBurstinessDetector(),
         RobertaOpenAIDetector(),
+        HC3RobertaDetector(),
         MageDetector(),
         FastDetectGPTDetector(),
+        RadarDetector(),  # opt-in (HUMANIZE_ENABLE_RADAR=1); robust-to-paraphrase, non-commercial
         BinocularsDetector(),
         *commercial_detectors(),
     ]

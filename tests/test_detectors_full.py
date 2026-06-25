@@ -39,7 +39,7 @@ def test_full_tier_loads_supervised_detectors():
     assert {"roberta_openai", "mage", "fast_detectgpt"} <= names, names
 
 
-@pytest.mark.parametrize("name", ["roberta_openai", "mage", "fast_detectgpt"])
+@pytest.mark.parametrize("name", ["roberta_openai", "mage", "fast_detectgpt", "hc3_roberta"])
 def test_supervised_detector_scores_in_unit_interval(name):
     det = next(d for d in load_detectors("full") if d.name == name)
     for text in (AI_TEXT, HUMAN_TEXT, "short text"):

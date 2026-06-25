@@ -56,7 +56,8 @@ The scripts auto-detect what's installed and degrade gracefully (the score JSON 
 | Tier | Install | Detectors | Notes |
 |---|---|---|---|
 | **lite** | *(default, nothing to install)* | perplexity+burstiness heuristic; token-overlap quality | Stdlib only, instant, **weak** — demo signal, not an evasion claim. |
-| **full** | `pip install -e ".[full]"` | + RoBERTa-OpenAI, MAGE, GPT-2 perplexity; MiniLM cosine quality | Real proxy signal on CPU. Downloads models on first run. |
+| **full** | `pip install -e ".[full]"` | + RoBERTa-OpenAI, HC3-RoBERTa, MAGE, Fast-DetectGPT, GPT-2 perplexity; MiniLM cosine quality | Real proxy signal on CPU. Downloads models on first run. |
+| **full + RADAR** | `HUMANIZE_ENABLE_RADAR=1` (opt-in) | + RADAR (RoBERTa-large, **robust-to-paraphrase** — the hardest open detector to fool) | ⚠️ `TrustSafeAI/RADAR-Vicuna-7B` is **non-commercial licensed** — research/eval only, off by default. |
 | **heavy** | `pip install -e ".[heavy]"` | + Binoculars (2×Falcon-7B) | Strongest proxy; GPU recommended. Eval only. |
 
 ```bash
