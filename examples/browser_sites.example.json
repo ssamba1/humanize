@@ -16,8 +16,8 @@
     "input_selector": "textarea.form-control.text",
     "input_mode": "textarea",
     "submit_button_text": "detect ai",
-    "result_selector": ".result-percentage",
-    "wait_s": 45,
-    "_caveat": "Submit is an <a>, not a button (handled). Result % is mixed with marketing percentages; result_selector likely needs adjusting per the live DOM."
+    "result_selector": "div.flex.justify-center.items-center",
+    "wait_s": 50,
+    "_caveat": "Real detector (scored AI text 97.3%), submit is an <a> (handled). FRAGILE: result is an SVG gauge with utility-class selectors that swap the input out after detection; verify live before trusting. ZeroGPT is the reliable built-in."
   }
 }

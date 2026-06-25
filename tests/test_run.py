@@ -123,6 +123,55 @@ def test_browser_scoring_loop_converges(monkeypatch):
     assert calls["n"] >= 2  # actually drove the web checker each iteration
 
 
+def test_browser_scoring_max_across_multiple(monkeypatch):
+    import humanize.browser_check as bc
+    import humanize.scripts.run as run_mod
+
+    monkeypatch.setattr(run_mod, "get_rewriter", lambda prefer=None: _GoodRW())
+
+    class _Chk:
+        def __init__(self, val):
+            self.val = val
+
+        def available(self):
+            return True
+
+        def check(self, text, **k):
+            return self.val
+
+    # two detectors: one already low, one high -> max is high -> must keep going (drives "beat all")
+    fakes = {"zerogpt": _Chk(0.05), "detecting-ai": _Chk(0.10)}
+    monkeypatch.setattr(bc, "get_browser_checker", lambda name: fakes.get(name))
+    res = humanize_text(AI, tier="lite", browser="zerogpt,detecting-ai", threshold=0.30, max_iters=2, sim_bar=0.0)
+    assert "error" not in res
+    assert res["tier"] == "browser:zerogpt,detecting-ai"
+    assert set(res["post"]["detectors"]) >= {"zerogpt", "detecting-ai"}
+    assert res["post"]["max"] == 0.10  # max across both, both under threshold -> passes
+    assert res["stopped"] == "passed"
+
+
+def test_margin_blocks_borderline_pass(monkeypatch):
+    import humanize.browser_check as bc
+    import humanize.scripts.run as run_mod
+
+    monkeypatch.setattr(run_mod, "get_rewriter", lambda prefer=None: _GoodRW())
+
+    class _Chk:
+        def available(self):
+            return True
+
+        def check(self, text, **k):
+            return 0.28  # below threshold 0.30 but only just
+
+    monkeypatch.setattr(bc, "get_browser_checker", lambda name: _Chk())
+    # margin 0: 0.28 < 0.30 -> comfortable enough, passes
+    r0 = humanize_text(AI, tier="lite", browser="zerogpt", threshold=0.30, margin=0.0, max_iters=2, sim_bar=0.0)
+    assert r0["stopped"] == "passed"
+    # margin 0.10: needs < 0.20 -> 0.28 is a borderline pass -> keep iterating, hit the cap
+    rm = humanize_text(AI, tier="lite", browser="zerogpt", threshold=0.30, margin=0.10, max_iters=2, sim_bar=0.0)
+    assert rm["stopped"] == "max_iters"
+
+
 def test_browser_scoring_unavailable_errors(monkeypatch):
     import humanize.browser_check as bc
     import humanize.scripts.run as run_mod
@@ -130,4 +179,4 @@ def test_browser_scoring_unavailable_errors(monkeypatch):
     monkeypatch.setattr(run_mod, "get_rewriter", lambda prefer=None: _GoodRW())
     monkeypatch.setattr(bc, "get_browser_checker", lambda name: None)
     res = humanize_text(AI, tier="lite", browser="zerogpt")
-    assert "error" in res and "unavailable" in res["error"]
+    assert "error" in res and "no browser checker available" in res["error"]

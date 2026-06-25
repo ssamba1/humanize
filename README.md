@@ -209,6 +209,28 @@ rewriting until it clears — optimizing against a real checker for $0. (Measure
 paragraph went 100% → 0% AI on ZeroGPT in one pass; a stickier one went 100% → 35% → **0%** once the
 loop used ZeroGPT's per-sentence feedback to target the flagged spans.)
 
+### Making it robust ("as foolproof as free gets")
+
+No humanizer truly passes *everything* — detectors disagree, update, and even re-score the same text
+differently. Two levers raise the floor:
+
+```bash
+# Beat the MAX across several real detectors at once (loop won't stop until ALL pass):
+humanize-loop "text" --browser zerogpt,detecting-ai --margin 0.10
+
+# The reliable multi-detector path (Originality/GPTZero/Turnitin-class) needs paid keys:
+humanize-loop "text" --tier commercial --margin 0.10
+humanize-verify "text" --tier commercial    # confirm pass/fail against every configured checker
+```
+
+- **`--browser a,b,c`** drives the loop against the **max** across multiple free web detectors — it
+  only declares success when *every* one passes. ZeroGPT is the reliable built-in; add others as
+  config (see `examples/browser_sites.example.json`).
+- **`--margin 0.10`** adds headroom: stop only when the score is *comfortably* below threshold, not
+  borderline — the practical guard against a noisy detector re-flagging a marginal pass.
+- **Truly foolproof = the commercial tier** (6 real APIs, key-gated) + margin. That's the only setup
+  that optimizes + verifies against the hard detectors; it costs credits and needs your keys.
+
 (Needs `.[api]` + a key; without one it errors clearly and points you back to the `/humanize`
 skill, where Claude is the rewriter.)
 

@@ -22,28 +22,44 @@ from humanize.scripts.quality import method, recommended_bar, similarity
 from humanize.scripts.score import DEFAULT_THRESHOLD, score_text
 
 
-def _browser_scorer(site: str, mapping: dict, threshold: float):
-    """Return a scorer(masked_text)->score-dict that drives a free web detector (real, no key).
+def _browser_scorer(sites: list[str], mapping: dict, threshold: float):
+    """Return a scorer(masked_text)->score-dict that drives one or more free web detectors (no key).
 
-    Scores the *restored* text (what a real detector actually sees), so the loop optimizes directly
-    against the live checker. Returns None if the browser checker isn't available.
+    Scores the *restored* text (what a real detector actually sees) against every available site and
+    drives the **max** across them — so the loop must beat ALL configured detectors, not just the
+    weakest (the closest thing to "foolproof" we can do for free). Returns None if none are available.
     """
     from humanize.browser_check import get_browser_checker
     from humanize.scripts.preserve import restore
 
-    chk = get_browser_checker(site)
-    if chk is None or not chk.available():
+    checkers = []
+    for site in sites:
+        chk = get_browser_checker(site)
+        if chk is not None and chk.available():
+            checkers.append((site, chk))
+    if not checkers:
         return None
 
+    label = "browser:" + ",".join(s for s, _ in checkers)
+
     def _score(masked_text: str) -> dict:
-        ai = float(chk.check(restore(masked_text, mapping)))
+        real = restore(masked_text, mapping)
+        scores: dict[str, float | None] = {}
+        for name, chk in checkers:
+            try:
+                scores[name] = round(float(chk.check(real)), 4)
+            except Exception as exc:
+                scores[name] = None
+                scores[f"{name}__error"] = str(exc)[:120]
+        numeric = [v for v in scores.values() if isinstance(v, (int, float))]
+        mx = max(numeric) if numeric else 0.5
         return {
-            "tier": f"browser:{site}",
-            "detectors": {site: round(ai, 4)},
-            "max": round(ai, 4),
-            "mean": round(ai, 4),
+            "tier": label,
+            "detectors": scores,
+            "max": round(mx, 4),
+            "mean": round(sum(numeric) / len(numeric), 4) if numeric else 0.5,
             "threshold": threshold,
-            "flagged": ai >= threshold,
+            "flagged": mx >= threshold,
         }
 
     return _score
@@ -56,7 +72,8 @@ def humanize_text(
     max_iters: int = 5,
     sim_bar: float | None = None,
     rewriter=None,
-    browser: str | None = None,
+    browser: str | list[str] | None = None,
+    margin: float = 0.0,
 ) -> dict:
     """Run the closed loop on ``text``; return a structured result dict.
 
@@ -64,8 +81,11 @@ def humanize_text(
     ``similarity``, ``tier``, ``sim_bar``, ``flagged`` (final), and ``stopped`` (why it stopped).
     If no rewriter is available, returns ``{"error": ...}`` without modifying the text.
 
-    ``browser`` (e.g. ``"zerogpt"``) scores each iteration against a free web detector instead of the
-    local proxies — the loop then optimizes against a *real* checker, no API key (but slow: ~10s/iter).
+    ``browser`` (e.g. ``"zerogpt"`` or ``"zerogpt,detecting-ai"``) scores each iteration against free
+    web detector(s) instead of local proxies — optimizing against the **max** across real checkers, no
+    API key (slow: ~10s each/iter). ``margin`` adds headroom: the loop only declares success when the
+    max score is below ``threshold - margin``, so it doesn't stop on a borderline pass that a noisy
+    detector might re-flag (the practical fix for detector non-reproducibility).
     """
     if sim_bar is None:
         sim_bar = recommended_bar()
@@ -79,10 +99,12 @@ def humanize_text(
 
     masked, mapping = lock(text)
 
-    browser_score = _browser_scorer(browser, mapping, threshold) if browser else None
-    if browser and browser_score is None:
+    sites = [s.strip() for s in browser.split(",")] if isinstance(browser, str) else (browser or [])
+    sites = [s for s in sites if s]
+    browser_score = _browser_scorer(sites, mapping, threshold) if sites else None
+    if sites and browser_score is None:
         return {
-            "error": f"browser checker '{browser}' unavailable — pip install .[browser] && playwright install chromium",
+            "error": f"no browser checker available from {sites} — pip install .[browser] && playwright install chromium",
             "final": text,
         }
 
@@ -91,13 +113,17 @@ def humanize_text(
             return browser_score(masked_text)
         return score_text(masked_text, tier=tier, threshold=threshold)
 
+    def _passed(s: dict) -> bool:
+        # Comfortable pass: below threshold by the safety margin (headroom vs detector noise).
+        return s["max"] < threshold - margin
+
     pre = score(masked)
     best_masked, best_score = masked, pre
     iters = 0
     stopped = "max_iters"
     for i in range(1, max_iters + 1):
         iters = i
-        if not best_score["flagged"] and similarity(masked, best_masked) >= sim_bar:
+        if _passed(best_score) and similarity(masked, best_masked) >= sim_bar:
             stopped = "passed"
             break
         try:
@@ -107,7 +133,7 @@ def humanize_text(
         cand_score = score(candidate)
         if similarity(masked, candidate) >= sim_bar and cand_score["max"] <= best_score["max"]:
             best_masked, best_score = candidate, cand_score
-        if not best_score["flagged"]:
+        if _passed(best_score):
             stopped = "passed"
             break
 
@@ -162,8 +188,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-iters", type=int, default=5)
     parser.add_argument(
         "--browser",
-        help="score each iteration against a free web detector (e.g. 'zerogpt') instead of local "
-        "proxies — real checker, no key, but slow (~10s/iter). Needs .[browser] + playwright.",
+        help="score each iteration against free web detector(s) instead of local proxies — "
+        "comma-separated (e.g. 'zerogpt,detecting-ai'); the loop must beat the MAX across all. "
+        "Real checkers, no key, but slow (~10s each/iter). Needs .[browser] + playwright.",
+    )
+    parser.add_argument(
+        "--margin",
+        type=float,
+        default=0.0,
+        help="safety headroom: only stop when max score < threshold - margin (e.g. 0.10), so a "
+        "borderline pass a noisy detector might re-flag keeps iterating. Default 0.",
     )
     parser.add_argument("--json", action="store_true", help="emit the full result as JSON")
     args = parser.parse_args(argv)
@@ -180,7 +214,12 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     result = humanize_text(
-        text, tier=args.tier, threshold=args.threshold, max_iters=args.max_iters, browser=args.browser
+        text,
+        tier=args.tier,
+        threshold=args.threshold,
+        max_iters=args.max_iters,
+        browser=args.browser,
+        margin=args.margin,
     )
     if args.json:
         print(json.dumps(result, ensure_ascii=True, indent=2))
