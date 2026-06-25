@@ -122,6 +122,16 @@ from humanize.rewriter import get_rewriter
 rw = get_rewriter()           # None if no SDK/key -> caller falls back to the scripted rewriter
 ```
 
+Run the whole loop standalone (lock → score → rewrite → restore → report), outside Claude:
+
+```bash
+humanize-loop "Your AI-sounding paragraph here." --tier full
+humanize-loop --file draft.txt --json     # full structured result
+```
+
+(Needs `.[api]` + a key; without one it errors clearly and points you back to the `/humanize`
+skill, where Claude is the rewriter.)
+
 ## Honest caveats
 
 - **Proxy ≠ commercial.** These detectors approximate; they aren't Originality.ai/Turnitin/etc.

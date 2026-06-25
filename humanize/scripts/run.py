@@ -1,0 +1,139 @@
+"""Headless humanize loop — run the full lock -> score -> rewrite -> restore loop as a CLI.
+
+Inside Claude Code the SKILL.md procedure drives the loop with Claude as the rewriter. This module
+is the *standalone* path: a `humanize-loop` console command (and `humanize_text` API) that runs the
+same loop programmatically using a hosted-LLM rewriter (``humanize.rewriter``). It reuses the exact
+same scripts the skill calls — preserve-lock, the detector ensemble, and the quality gate — so the
+two paths stay behaviourally identical.
+
+A rewriter must be configured (``pip install -e ".[api]"`` + ``ANTHROPIC_API_KEY``/``OPENAI_API_KEY``);
+without one this returns a clear error rather than silently no-op'ing (use the Claude skill instead).
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+
+from humanize.rewriter import get_rewriter
+from humanize.scripts.preserve import lock, restore
+from humanize.scripts.quality import method, recommended_bar, similarity
+from humanize.scripts.score import DEFAULT_THRESHOLD, score_text
+
+
+def humanize_text(
+    text: str,
+    tier: str = "full",
+    threshold: float = DEFAULT_THRESHOLD,
+    max_iters: int = 5,
+    sim_bar: float | None = None,
+    rewriter=None,
+) -> dict:
+    """Run the closed loop on ``text``; return a structured result dict.
+
+    Keys: ``final`` (humanized text, spans restored), ``iterations``, ``pre``/``post`` score dicts,
+    ``similarity``, ``tier``, ``sim_bar``, ``flagged`` (final), and ``stopped`` (why it stopped).
+    If no rewriter is available, returns ``{"error": ...}`` without modifying the text.
+    """
+    if sim_bar is None:
+        sim_bar = recommended_bar()
+    rw = rewriter if rewriter is not None else get_rewriter()
+    if rw is None:
+        return {
+            "error": "no rewriter configured — install .[api] and set ANTHROPIC_API_KEY or "
+            "OPENAI_API_KEY, or use the /humanize Claude skill (Claude is the rewriter).",
+            "final": text,
+        }
+
+    masked, mapping = lock(text)
+    pre = score_text(masked, tier=tier, threshold=threshold)
+    best_masked, best_score = masked, pre
+    iters = 0
+    stopped = "max_iters"
+    for i in range(1, max_iters + 1):
+        iters = i
+        if not best_score["flagged"] and similarity(masked, best_masked) >= sim_bar:
+            stopped = "passed"
+            break
+        try:
+            candidate = rw.rewrite(best_masked, best_score, threshold)
+        except Exception as exc:  # surface the failure rather than silently looping
+            return {"error": f"rewriter failed: {type(exc).__name__}: {str(exc)[:160]}", "final": restore(best_masked, mapping)}
+        cand_score = score_text(candidate, tier=tier, threshold=threshold)
+        if similarity(masked, candidate) >= sim_bar and cand_score["max"] <= best_score["max"]:
+            best_masked, best_score = candidate, cand_score
+        if not best_score["flagged"]:
+            stopped = "passed"
+            break
+
+    final = restore(best_masked, mapping)
+    return {
+        "final": final,
+        "iterations": iters,
+        "pre": pre,
+        "post": best_score,
+        "similarity": similarity(masked, best_masked),
+        "tier": best_score.get("tier", tier),
+        "sim_bar": sim_bar,
+        "quality_metric": method(),
+        "flagged": best_score["flagged"],
+        "stopped": stopped,
+    }
+
+
+def _render(result: dict) -> str:
+    if "error" in result:
+        return f"ERROR: {result['error']}"
+    pre, post = result["pre"], result["post"]
+    lines = ["# humanize result", ""]
+    lines.append(f"tier={result['tier']}  iterations={result['iterations']}  stopped={result['stopped']}")
+    lines.append(f"max P(AI): {pre['max']:.3f} -> {post['max']:.3f}  (threshold {post['threshold']})")
+    lines.append(f"similarity: {result['similarity']:.3f} (bar {result['sim_bar']}, {result['quality_metric']})")
+    lines.append("\nper-detector (pre -> post):")
+    for name in pre.get("detectors", {}):
+        if "__error" in name:
+            continue
+        p = pre["detectors"].get(name)
+        q = post["detectors"].get(name)
+        if isinstance(p, (int, float)) and isinstance(q, (int, float)):
+            lines.append(f"  {name}: {p:.3f} -> {q:.3f}")
+    lines.append("\n--- humanized text ---\n" + result["final"])
+    return "\n".join(lines)
+
+
+def main(argv: list[str] | None = None) -> int:
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+    parser = argparse.ArgumentParser(prog="humanize-loop", description="Run the headless humanize loop.")
+    parser.add_argument("text", nargs="?", help="text to humanize (or --file / stdin)")
+    parser.add_argument("--file", "-f", help="read text from this file")
+    parser.add_argument("--tier", default="full", choices=["lite", "full", "heavy"])
+    parser.add_argument("--threshold", "-t", type=float, default=DEFAULT_THRESHOLD)
+    parser.add_argument("--max-iters", type=int, default=5)
+    parser.add_argument("--json", action="store_true", help="emit the full result as JSON")
+    args = parser.parse_args(argv)
+
+    if args.file:
+        with open(args.file, encoding="utf-8") as fh:
+            text = fh.read()
+    elif args.text:
+        text = args.text
+    else:
+        text = sys.stdin.read()
+    if not text.strip():
+        print(json.dumps({"error": "empty input"}))
+        return 2
+
+    result = humanize_text(text, tier=args.tier, threshold=args.threshold, max_iters=args.max_iters)
+    if args.json:
+        print(json.dumps(result, ensure_ascii=True, indent=2))
+    else:
+        print(_render(result))
+    return 1 if "error" in result else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
