@@ -29,6 +29,7 @@ full = [
     "transformers>=4.40",
     "sentence-transformers>=2.6",
     "spacy>=3.7",
+    "sentencepiece>=0.2",
 ]
 # Strongest proxy (Binoculars = 2x Falcon-7B). GPU recommended.
 # Includes `full` so torch/transformers are present — Binoculars needs them to run at all.
@@ -65,6 +66,7 @@ packages = [
     "humanize.scripts",
     "humanize.detectors",
     "humanize.rewriter",
+    "humanize.attacks",
     "eval",
 ]
 

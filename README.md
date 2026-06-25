@@ -152,7 +152,9 @@ rather than shipped unverified:
 - **Commercial-detector API validation** (Originality.ai/Turnitin/ZeroGPT) — needs paid keys; the
   local proxy ensemble is the offline approximation.
 - **Web UI** and **marketplace publishing automation** — out of scope for a CLI/skill.
-- **Back-translation / token-mixing** attack modules — candidate future detectors-vs-attacks work.
+- **Token-mixing (TOBLEND-style)** attack — needs several generator LLMs; deferred. (Back-translation
+  is built: `humanize.attacks.back_translate` does round-trip MT via MarianMT, a research-backed
+  augmentation; run it on raw text *before* preserve-lock.)
 
 ## License
 
