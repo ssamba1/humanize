@@ -15,6 +15,8 @@ Free. Open source. Honest about what it can and can't do.
 [![Claude Code skill](https://img.shields.io/badge/Claude%20Code-skill-8A2BE2.svg)](#-quick-start)
 [![Zero-dependency lite tier](https://img.shields.io/badge/install-zero--dependency-brightgreen.svg)](#tiers)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-orange.svg)](CONTRIBUTING.md)
+[![Live site](https://img.shields.io/badge/site-ssamba1.github.io%2Fhumanize-2ea44f.svg)](https://ssamba1.github.io/humanize/)
+[![good first issues](https://img.shields.io/github/issues/ssamba1/humanize/good%20first%20issue.svg?label=good%20first%20issues&color=7057ff)](https://github.com/ssamba1/humanize/labels/good%20first%20issue)
 
 **Beat GPTZero · ZeroGPT · Originality.ai · Turnitin · Copyleaks · Winston · Sapling** — by optimizing
 against them, not guessing. [Why this is the most complete open humanizer →](#-why-this-is-the-best-open-source-ai-humanizer)
