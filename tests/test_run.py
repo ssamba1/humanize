@@ -95,3 +95,39 @@ def test_cli_no_rewriter_exits_nonzero(monkeypatch, capsys):
 def test_cli_empty_input_returns_2(capsys):
     rc = main(["--tier", "lite", "   "])
     assert rc == 2
+
+
+def test_browser_scoring_loop_converges(monkeypatch):
+    import humanize.browser_check as bc
+    import humanize.scripts.run as run_mod
+
+    monkeypatch.setattr(run_mod, "get_rewriter", lambda prefer=None: _GoodRW())
+
+    calls = {"n": 0}
+
+    class _FakeChk:
+        def available(self):
+            return True
+
+        def check(self, text, **k):
+            calls["n"] += 1
+            return 0.9 if calls["n"] == 1 else 0.05  # flagged first, passes after one rewrite
+
+    monkeypatch.setattr(bc, "get_browser_checker", lambda name: _FakeChk())
+    # sim_bar=0.0 isolates the browser-scoring behaviour from the lite token-overlap quality gate.
+    res = humanize_text(AI, tier="lite", browser="zerogpt", threshold=0.30, max_iters=3, sim_bar=0.0)
+    assert "error" not in res
+    assert res["tier"] == "browser:zerogpt"
+    assert res["post"]["max"] <= 0.30
+    assert res["stopped"] == "passed"
+    assert calls["n"] >= 2  # actually drove the web checker each iteration
+
+
+def test_browser_scoring_unavailable_errors(monkeypatch):
+    import humanize.browser_check as bc
+    import humanize.scripts.run as run_mod
+
+    monkeypatch.setattr(run_mod, "get_rewriter", lambda prefer=None: _GoodRW())
+    monkeypatch.setattr(bc, "get_browser_checker", lambda name: None)
+    res = humanize_text(AI, tier="lite", browser="zerogpt")
+    assert "error" in res and "unavailable" in res["error"]

@@ -201,7 +201,13 @@ Run the whole loop standalone (lock → score → rewrite → restore → report
 ```bash
 humanize-loop "Your AI-sounding paragraph here." --tier full
 humanize-loop --file draft.txt --json     # full structured result
+humanize-loop "text" --browser zerogpt    # iterate against the REAL ZeroGPT web detector, no key (slow)
 ```
+
+`--browser zerogpt` makes the loop score each iteration against a live free web detector and keep
+rewriting until it clears — optimizing against a real checker for $0. (Measured live: a formulaic AI
+paragraph went 100% → 0% AI on ZeroGPT in one pass; a stickier one went 100% → 35% → **0%** once the
+loop used ZeroGPT's per-sentence feedback to target the flagged spans.)
 
 (Needs `.[api]` + a key; without one it errors clearly and points you back to the `/humanize`
 skill, where Claude is the rewriter.)

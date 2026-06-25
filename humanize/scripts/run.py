@@ -22,6 +22,33 @@ from humanize.scripts.quality import method, recommended_bar, similarity
 from humanize.scripts.score import DEFAULT_THRESHOLD, score_text
 
 
+def _browser_scorer(site: str, mapping: dict, threshold: float):
+    """Return a scorer(masked_text)->score-dict that drives a free web detector (real, no key).
+
+    Scores the *restored* text (what a real detector actually sees), so the loop optimizes directly
+    against the live checker. Returns None if the browser checker isn't available.
+    """
+    from humanize.browser_check import get_browser_checker
+    from humanize.scripts.preserve import restore
+
+    chk = get_browser_checker(site)
+    if chk is None or not chk.available():
+        return None
+
+    def _score(masked_text: str) -> dict:
+        ai = float(chk.check(restore(masked_text, mapping)))
+        return {
+            "tier": f"browser:{site}",
+            "detectors": {site: round(ai, 4)},
+            "max": round(ai, 4),
+            "mean": round(ai, 4),
+            "threshold": threshold,
+            "flagged": ai >= threshold,
+        }
+
+    return _score
+
+
 def humanize_text(
     text: str,
     tier: str = "full",
@@ -29,12 +56,16 @@ def humanize_text(
     max_iters: int = 5,
     sim_bar: float | None = None,
     rewriter=None,
+    browser: str | None = None,
 ) -> dict:
     """Run the closed loop on ``text``; return a structured result dict.
 
     Keys: ``final`` (humanized text, spans restored), ``iterations``, ``pre``/``post`` score dicts,
     ``similarity``, ``tier``, ``sim_bar``, ``flagged`` (final), and ``stopped`` (why it stopped).
     If no rewriter is available, returns ``{"error": ...}`` without modifying the text.
+
+    ``browser`` (e.g. ``"zerogpt"``) scores each iteration against a free web detector instead of the
+    local proxies — the loop then optimizes against a *real* checker, no API key (but slow: ~10s/iter).
     """
     if sim_bar is None:
         sim_bar = recommended_bar()
@@ -47,7 +78,20 @@ def humanize_text(
         }
 
     masked, mapping = lock(text)
-    pre = score_text(masked, tier=tier, threshold=threshold)
+
+    browser_score = _browser_scorer(browser, mapping, threshold) if browser else None
+    if browser and browser_score is None:
+        return {
+            "error": f"browser checker '{browser}' unavailable — pip install .[browser] && playwright install chromium",
+            "final": text,
+        }
+
+    def score(masked_text: str) -> dict:
+        if browser_score is not None:
+            return browser_score(masked_text)
+        return score_text(masked_text, tier=tier, threshold=threshold)
+
+    pre = score(masked)
     best_masked, best_score = masked, pre
     iters = 0
     stopped = "max_iters"
@@ -60,7 +104,7 @@ def humanize_text(
             candidate = rw.rewrite(best_masked, best_score, threshold)
         except Exception as exc:  # surface the failure rather than silently looping
             return {"error": f"rewriter failed: {type(exc).__name__}: {str(exc)[:160]}", "final": restore(best_masked, mapping)}
-        cand_score = score_text(candidate, tier=tier, threshold=threshold)
+        cand_score = score(candidate)
         if similarity(masked, candidate) >= sim_bar and cand_score["max"] <= best_score["max"]:
             best_masked, best_score = candidate, cand_score
         if not best_score["flagged"]:
@@ -116,6 +160,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--tier", default="full", choices=["lite", "full", "heavy", "commercial"])
     parser.add_argument("--threshold", "-t", type=float, default=DEFAULT_THRESHOLD)
     parser.add_argument("--max-iters", type=int, default=5)
+    parser.add_argument(
+        "--browser",
+        help="score each iteration against a free web detector (e.g. 'zerogpt') instead of local "
+        "proxies — real checker, no key, but slow (~10s/iter). Needs .[browser] + playwright.",
+    )
     parser.add_argument("--json", action="store_true", help="emit the full result as JSON")
     args = parser.parse_args(argv)
 
@@ -130,7 +179,9 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"error": "empty input"}))
         return 2
 
-    result = humanize_text(text, tier=args.tier, threshold=args.threshold, max_iters=args.max_iters)
+    result = humanize_text(
+        text, tier=args.tier, threshold=args.threshold, max_iters=args.max_iters, browser=args.browser
+    )
     if args.json:
         print(json.dumps(result, ensure_ascii=True, indent=2))
     else:
