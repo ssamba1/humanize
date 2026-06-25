@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 
+from training.model_utils import load_model as _load_model
 from training.reward import humanness_reward
 
 DEFAULT_MODEL = "Qwen/Qwen2.5-3B-Instruct"
@@ -41,8 +42,12 @@ def train(
     k: int = 6,
     out: str = "out/rl-humanizer",
     smoke: bool = False,
+    load_4bit: bool = False,
 ):
-    """GRPO-train the policy. Heavy deps imported here so this module stays importable without a GPU."""
+    """GRPO-train the policy. Heavy deps imported here so this module stays importable without a GPU.
+
+    ``load_4bit`` = QLoRA: load the base model in 4-bit so a 3B model fits a free 16GB T4 (Colab/Kaggle).
+    """
     import torch  # noqa: F401  (fail loudly here if the env can't do training)
     from datasets import Dataset
     from peft import LoraConfig
@@ -51,6 +56,7 @@ def train(
     if smoke:  # prove the pipeline runs: tiny model, 2 steps, cheap lite reward, few samples
         model_id, tier, steps, k, out = SMOKE_MODEL, "lite", 2, 4, "out/rl-smoke"
 
+    model = _load_model(model_id, load_4bit)
     rows = build_dataset(n=16 if smoke else 2000)
     source_by_prompt = {r["prompt"]: r["source"] for r in rows}
     dataset = Dataset.from_list([{"prompt": r["prompt"]} for r in rows])
@@ -70,7 +76,7 @@ def train(
         logging_steps=10,
     )
     lora = LoraConfig(r=32, lora_alpha=64, target_modules="all-linear", task_type="CAUSAL_LM")
-    trainer = GRPOTrainer(model=model_id, reward_funcs=reward_fn, args=cfg, train_dataset=dataset, peft_config=lora)
+    trainer = GRPOTrainer(model=model, reward_funcs=reward_fn, args=cfg, train_dataset=dataset, peft_config=lora)
     trainer.train()
     trainer.save_model(out)
     return out
@@ -84,8 +90,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--k", type=int, default=6)
     parser.add_argument("--out", default="out/rl-humanizer")
     parser.add_argument("--smoke", action="store_true", help="tiny model + 2 steps + lite reward (proves it runs)")
+    parser.add_argument("--load-4bit", action="store_true", help="QLoRA 4-bit load so 3B fits a free 16GB T4")
     args = parser.parse_args(argv)
-    path = train(model_id=args.model, tier=args.tier, steps=args.steps, k=args.k, out=args.out, smoke=args.smoke)
+    path = train(
+        model_id=args.model, tier=args.tier, steps=args.steps, k=args.k, out=args.out, smoke=args.smoke, load_4bit=args.load_4bit
+    )
     print(f"saved policy -> {path}")
     return 0
 

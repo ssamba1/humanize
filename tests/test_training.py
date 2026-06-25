@@ -69,3 +69,10 @@ def test_rl_build_dataset_n():
     rows = build_dataset("builtin", n=4)
     assert len(rows) == 4
     assert all("prompt" in r and "source" in r for r in rows)
+
+
+def test_load_model_passthrough_without_4bit():
+    # 4-bit off must return the model-id string (no torch/GPU needed) so trl loads it itself.
+    from training.model_utils import load_model
+
+    assert load_model("Qwen/Qwen2.5-3B-Instruct", load_4bit=False) == "Qwen/Qwen2.5-3B-Instruct"

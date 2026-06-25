@@ -43,6 +43,7 @@ def train(
     tier: str = "full",
     out: str = "out/dpo-humanizer",
     smoke: bool = False,
+    load_4bit: bool = False,
 ):
     """LoRA DPO. Heavy deps imported here so the module stays importable without a GPU."""
     import torch  # noqa: F401
@@ -50,11 +51,14 @@ def train(
     from peft import LoraConfig
     from trl import DPOConfig, DPOTrainer
 
+    from training.model_utils import load_model
+
     if smoke:
         model_id, out = SMOKE_MODEL, "out/dpo-smoke"
         pairs = _smoke_pairs()
     else:
         pairs = build_pairs(dataset, n=n, tier=tier)["pairs"]
+    model = load_model(model_id, load_4bit)
 
     dataset_obj = Dataset.from_list(pairs)
     cfg = DPOConfig(
@@ -69,7 +73,7 @@ def train(
         beta=0.1,
     )
     lora = LoraConfig(r=16, lora_alpha=32, target_modules="all-linear", task_type="CAUSAL_LM")
-    trainer = DPOTrainer(model=model_id, args=cfg, train_dataset=dataset_obj, peft_config=lora)
+    trainer = DPOTrainer(model=model, args=cfg, train_dataset=dataset_obj, peft_config=lora)
     trainer.train()
     trainer.save_model(out)
     return out
@@ -83,8 +87,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--tier", default="full", choices=["lite", "full", "heavy", "commercial"])
     parser.add_argument("--out", default="out/dpo-humanizer")
     parser.add_argument("--smoke", action="store_true", help="tiny model + 2 steps + synthetic pairs (proves it runs)")
+    parser.add_argument("--load-4bit", action="store_true", help="QLoRA 4-bit load so 3B fits a free 16GB T4")
     args = parser.parse_args(argv)
-    path = train(model_id=args.model, dataset=args.dataset, n=args.n, tier=args.tier, out=args.out, smoke=args.smoke)
+    path = train(
+        model_id=args.model, dataset=args.dataset, n=args.n, tier=args.tier, out=args.out, smoke=args.smoke, load_4bit=args.load_4bit
+    )
     print(f"saved DPO policy -> {path}")
     return 0
 

@@ -71,6 +71,7 @@ train = [
     "transformers>=4.40",
     "datasets>=2.19",
     "accelerate>=0.30",
+    "bitsandbytes>=0.43",
 ]
 dev = [
     "pytest>=8",
@@ -108,6 +109,7 @@ humanize = ["SKILL.md", "references/*.md"]
 [tool.ruff]
 line-length = 100
 target-version = "py39"
+extend-exclude = ["*.ipynb"]  # notebooks use cell magics (!cmd) ruff can't parse
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP", "B"]
