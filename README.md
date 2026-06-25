@@ -65,6 +65,35 @@ humanize-score "Your text here" --tier full --threshold 0.3
 echo "piped text" | humanize-score
 ```
 
+## Passing the real commercial checkers
+
+The local detectors are *proxies*. To actually optimize for "passes GPTZero / Originality / Turnitin /
+Copyleaks / ZeroGPT / Winston / Sapling", wire the real APIs — each is **key-gated** (nothing runs or
+bills unless you set its key):
+
+```bash
+pip install -e ".[commercial]"
+export GPTZERO_API_KEY=...        ORIGINALITY_API_KEY=...
+export WINSTON_API_KEY=...        SAPLING_API_KEY=...
+export ZEROGPT_API_KEY=...        COPYLEAKS_EMAIL=...  COPYLEAKS_API_KEY=...
+```
+
+Then the `commercial` tier adds every configured checker to the ensemble, and the loop drives the
+**max across all of them** below threshold — i.e. it won't stop until *every* checker you've wired up
+passes:
+
+```bash
+humanize-loop "text" --tier commercial          # rewrite until all configured checkers pass
+humanize-verify "text" --threshold 0.30         # pass/fail report per checker + overall verdict
+humanize-verify --file out.txt --json
+```
+
+`humanize-verify` exits `0` only when **every** configured checker scores under the threshold.
+
+> ⚠️ **You must supply the keys.** Without them this cannot be verified — "passes all major checkers"
+> is unprovable against detectors you don't run. Each loop iteration calls every commercial checker,
+> so a `--tier commercial` run **costs API credits per iteration** (cap with `--max-iters`).
+
 ## Eval harness (research only)
 
 Validates the thesis — closed loop beats single-pass — without a human in the seat (a scripted
@@ -144,17 +173,17 @@ skill, where Claude is the rewriter.)
 
 ## Deferred
 
-Genuinely out of reach without GPUs, paid API keys, or a much larger surface — documented here
-rather than shipped unverified:
+What's *not* here, and the honest blocker for each (built unverified would violate the testing bar):
 
-- **Local DPO/RL-against-ensemble training** (the StealthRL/MASH "moat") — needs GPU training; the
-  hosted-rewriter loop is the training-free stand-in that's actually shippable.
-- **Commercial-detector API validation** (Originality.ai/Turnitin/ZeroGPT) — needs paid keys; the
-  local proxy ensemble is the offline approximation.
-- **Web UI** and **marketplace publishing automation** — out of scope for a CLI/skill.
-- **Token-mixing (TOBLEND-style)** attack — needs several generator LLMs; deferred. (Back-translation
-  is built: `humanize.attacks.back_translate` does round-trip MT via MarianMT, a research-backed
-  augmentation; run it on raw text *before* preserve-lock.)
+- **Local DPO/RL-against-ensemble training** (the StealthRL/MASH "moat") — needs a **GPU**; the
+  hosted-rewriter loop + commercial-tier optimization is the training-free stand-in that's shippable.
+- **Web UI** and **marketplace publishing automation** — a separate product surface, out of scope for
+  a CLI/skill.
+- **Token-mixing (TOBLEND-style)** attack — needs several generator LLMs running locally; deferred.
+
+Built and shippable now: the `/humanize` skill, 5 local proxy detectors, 6 **commercial-checker
+adapters** (key-gated) + the `commercial` tier + `humanize-verify`, hosted-LLM rewriter, headless
+`humanize-loop`, back-translation (`humanize.attacks.back_translate`), and the eval harness.
 
 ## License
 

@@ -110,7 +110,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="humanize-loop", description="Run the headless humanize loop.")
     parser.add_argument("text", nargs="?", help="text to humanize (or --file / stdin)")
     parser.add_argument("--file", "-f", help="read text from this file")
-    parser.add_argument("--tier", default="full", choices=["lite", "full", "heavy"])
+    parser.add_argument("--tier", default="full", choices=["lite", "full", "heavy", "commercial"])
     parser.add_argument("--threshold", "-t", type=float, default=DEFAULT_THRESHOLD)
     parser.add_argument("--max-iters", type=int, default=5)
     parser.add_argument("--json", action="store_true", help="emit the full result as JSON")

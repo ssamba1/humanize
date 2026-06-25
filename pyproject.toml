@@ -47,9 +47,14 @@ api = [
     "anthropic>=0.40",
     "openai>=1.0",
 ]
+# Commercial AI-detector API clients (the real checkers; each is key-gated at runtime).
+commercial = [
+    "requests>=2.28",
+]
 dev = [
     "pytest>=8",
     "ruff>=0.4",
+    "requests>=2.28",
 ]
 
 [project.urls]
@@ -59,6 +64,7 @@ Repository = "https://github.com/ssamba1/humanize"
 [project.scripts]
 humanize-score = "humanize.scripts.score:main"
 humanize-loop = "humanize.scripts.run:main"
+humanize-verify = "humanize.scripts.verify:main"
 
 [tool.setuptools]
 packages = [

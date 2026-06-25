@@ -18,8 +18,8 @@ from __future__ import annotations
 from typing import Protocol, runtime_checkable
 
 # Tier ordering: a request for "full" also includes "lite" detectors, etc.
-Tier = str  # "lite" | "full" | "heavy"
-_TIER_RANK = {"lite": 0, "full": 1, "heavy": 2}
+Tier = str  # "lite" | "full" | "heavy" | "commercial"
+_TIER_RANK = {"lite": 0, "full": 1, "heavy": 2, "commercial": 3}
 
 
 def clamp01(x: float) -> float:
@@ -50,8 +50,9 @@ def _tier_at_most(detector_tier: Tier, requested: Tier) -> bool:
 
 
 def all_detectors() -> list[Detector]:
-    """Instantiate every known adapter (cheap; no heavy imports happen here)."""
+    """Instantiate every known adapter (cheap; no heavy imports / network happen here)."""
     from .binoculars import BinocularsDetector
+    from .commercial import commercial_detectors
     from .fast_detectgpt import FastDetectGPTDetector
     from .mage import MageDetector
     from .perplexity_burstiness import PerplexityBurstinessDetector
@@ -63,6 +64,7 @@ def all_detectors() -> list[Detector]:
         MageDetector(),
         FastDetectGPTDetector(),
         BinocularsDetector(),
+        *commercial_detectors(),
     ]
 
 

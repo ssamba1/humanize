@@ -75,8 +75,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--tier",
         default="full",
-        choices=["lite", "full", "heavy"],
-        help="Max detector tier to attempt; auto-degrades to what is installed (default: full).",
+        choices=["lite", "full", "heavy", "commercial"],
+        help="Max detector tier to attempt; auto-degrades to what is installed/configured "
+        "(default: full). 'commercial' adds the paid API checkers whose keys are set.",
     )
     parser.add_argument(
         "--threshold",
