@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.env
+
+# Data & model caches (gitignored — pulled at runtime)
+data/
+*.cache
+.cache/
+models/
+
+# Eval outputs
+eval/outputs/
+*.report.json
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
