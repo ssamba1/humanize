@@ -107,6 +107,9 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
+    from humanize._env import load_env
+
+    load_env()  # pick up ANTHROPIC_API_KEY / commercial keys from a .env file if present
     parser = argparse.ArgumentParser(prog="humanize-loop", description="Run the headless humanize loop.")
     parser.add_argument("text", nargs="?", help="text to humanize (or --file / stdin)")
     parser.add_argument("--file", "-f", help="read text from this file")

@@ -91,3 +91,25 @@ def test_cli_exit_codes(monkeypatch, capsys):
     assert rc == 0
     parsed = json.loads(capsys.readouterr().out)
     assert parsed["passes_all"] is True
+
+
+def test_browser_checker_score_counts(monkeypatch):
+    import humanize.browser_check as bc
+
+    monkeypatch.setattr(bc.ZeroGPTChecker, "available", lambda self: True)
+    monkeypatch.setattr(bc.ZeroGPTChecker, "check", lambda self, text, **k: 0.05)
+    v = verify("text", threshold=0.30, browser=["zerogpt"])
+    assert "zerogpt(web)" in v["results"]
+    assert v["results"]["zerogpt(web)"]["passes"] is True
+    assert v["passes_all"] is True
+    assert v["n_configured"] == 1
+
+
+def test_browser_checker_unavailable_is_a_fail(monkeypatch):
+    import humanize.browser_check as bc
+
+    monkeypatch.setattr(bc.ZeroGPTChecker, "available", lambda self: False)
+    v = verify("text", browser=["zerogpt"])
+    r = v["results"]["zerogpt(web)"]
+    assert r["passes"] is False and r["error"]
+    assert v["passes_all"] is False

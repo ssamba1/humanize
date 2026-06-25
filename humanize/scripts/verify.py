@@ -18,28 +18,64 @@ import json
 import sys
 
 from humanize.detectors.base import clamp01
-from humanize.detectors.commercial import commercial_detectors
+from humanize.detectors.commercial import CopyleaksDetector, commercial_detectors
 from humanize.scripts.score import DEFAULT_THRESHOLD
 
 
-def verify(text: str, threshold: float = DEFAULT_THRESHOLD) -> dict:
-    """Score ``text`` against every configured commercial checker; return a verdict dict."""
-    configured = [d for d in commercial_detectors() if d.available()]
+def verify(
+    text: str,
+    threshold: float = DEFAULT_THRESHOLD,
+    sandbox: bool = False,
+    browser: list[str] | None = None,
+) -> dict:
+    """Score ``text`` against every configured commercial checker; return a verdict dict.
+
+    ``sandbox=True`` puts Copyleaks in free mock mode (pipeline test only — scores not meaningful).
+    ``browser`` is a list of free-web-UI checker names (e.g. ``["zerogpt"]``) to drive via Playwright
+    (no API key, but slow/fragile — see humanize.browser_check).
+    """
+    detectors = commercial_detectors()
+    if sandbox:
+        for d in detectors:
+            if isinstance(d, CopyleaksDetector):
+                d.sandbox = True
     results: dict[str, dict] = {}
-    for d in configured:
+    names: list[str] = []
+
+    for d in (d for d in detectors if d.available()):
+        names.append(d.name)
         try:
             ai = clamp01(float(d.score(text)))
             results[d.name] = {"ai": round(ai, 4), "passes": ai < threshold}
         except Exception as exc:  # surface per-checker failure rather than crashing the verdict
             results[d.name] = {"ai": None, "passes": False, "error": str(exc)[:160]}
 
+    for site in browser or []:
+        from humanize.browser_check import get_browser_checker
+
+        key = f"{site}(web)"
+        names.append(key)
+        chk = get_browser_checker(site)
+        if chk is None or not chk.available():
+            results[key] = {
+                "ai": None,
+                "passes": False,
+                "error": "browser checker unavailable — pip install .[browser] && playwright install chromium",
+            }
+            continue
+        try:
+            ai = clamp01(float(chk.check(text)))
+            results[key] = {"ai": round(ai, 4), "passes": ai < threshold}
+        except Exception as exc:
+            results[key] = {"ai": None, "passes": False, "error": str(exc)[:160]}
+
     passing = [n for n, r in results.items() if r.get("passes")]
     return {
-        "configured": [d.name for d in configured],
+        "configured": names,
         "threshold": threshold,
         "results": results,
-        "passes_all": bool(configured) and all(r.get("passes") for r in results.values()),
-        "n_configured": len(configured),
+        "passes_all": bool(names) and all(r.get("passes") for r in results.values()),
+        "n_configured": len(names),
         "n_passing": len(passing),
     }
 
@@ -72,12 +108,26 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
+    from humanize._env import load_env
+
+    load_env()  # pick up keys from a .env file if present
     parser = argparse.ArgumentParser(prog="humanize-verify", description="Verify text against commercial AI checkers.")
     parser.add_argument("text", nargs="?", help="text to verify (or --file / stdin)")
     parser.add_argument("--file", "-f", help="read text from this file")
     parser.add_argument("--threshold", "-t", type=float, default=DEFAULT_THRESHOLD)
     parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--sandbox",
+        action="store_true",
+        help="Copyleaks free mock mode — tests the pipeline at no cost (scores are NOT real).",
+    )
+    parser.add_argument(
+        "--browser",
+        help="comma-separated free-web-UI checkers to drive via Playwright (e.g. 'zerogpt'). "
+        "No API key, but slow/fragile; respect each site's terms.",
+    )
     args = parser.parse_args(argv)
+    browser = [s.strip() for s in args.browser.split(",")] if args.browser else None
 
     if args.file:
         with open(args.file, encoding="utf-8") as fh:
@@ -90,7 +140,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"error": "empty input"}))
         return 2
 
-    v = verify(text, threshold=args.threshold)
+    v = verify(text, threshold=args.threshold, sandbox=args.sandbox, browser=browser)
     print(json.dumps(v, ensure_ascii=True, indent=2) if args.json else _render(v))
     # exit 0 only when there is at least one checker AND all pass
     return 0 if v["passes_all"] else 1

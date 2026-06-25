@@ -88,6 +88,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
+    from humanize._env import load_env
+
+    load_env()  # pick up commercial keys from a .env file if present (for --tier commercial)
+
     text = _read_input(args)
     if not text.strip():
         print(json.dumps({"error": "empty input"}))

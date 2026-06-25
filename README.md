@@ -90,9 +90,25 @@ humanize-verify --file out.txt --json
 
 `humanize-verify` exits `0` only when **every** configured checker scores under the threshold.
 
-> ⚠️ **You must supply the keys.** Without them this cannot be verified — "passes all major checkers"
-> is unprovable against detectors you don't run. Each loop iteration calls every commercial checker,
-> so a `--tier commercial` run **costs API credits per iteration** (cap with `--max-iters`).
+**Keys via `.env`.** Copy `.env.example` → `.env` (gitignored) and fill what you have; the CLIs
+auto-load it (real shell env vars still win). Uses `python-dotenv` if installed, else a built-in parser.
+
+**Free ways to test without paying:**
+
+```bash
+humanize-verify --sandbox "text"              # Copyleaks free MOCK mode (tests plumbing; scores not real)
+pip install -e ".[browser]" && playwright install chromium
+humanize-verify --browser zerogpt "text"      # drives the free ZeroGPT web UI — no API key
+```
+
+The `--browser` path drives a real headless browser through a free web checker (ZeroGPT confirmed
+working) and reads the % score — $0, no key. It's **slow and fragile** (ads/layout/Cloudflare can
+break it) and may breach the site's terms at volume — use it for occasional checks on your own text,
+not inside the loop.
+
+> ⚠️ **You must supply the keys (or use the free paths above).** "Passes all major checkers" is
+> unprovable against detectors you don't run. Each `--tier commercial` loop iteration calls every
+> commercial checker, so it **costs API credits per iteration** (cap with `--max-iters`).
 
 ## Eval harness (research only)
 

@@ -156,6 +156,11 @@ class CopyleaksDetector:
     name = "copyleaks"
     tier = "commercial"
 
+    def __init__(self, sandbox: bool = False):
+        # sandbox=True returns free *mock* results (still needs login) — for testing the pipeline,
+        # not real detection. The score is not meaningful in sandbox mode.
+        self.sandbox = sandbox
+
     def available(self) -> bool:
         return _has("COPYLEAKS_EMAIL", "COPYLEAKS_API_KEY")
 
@@ -167,7 +172,7 @@ class CopyleaksDetector:
         data = _post_json(
             f"https://api.copyleaks.com/v2/writer-detector/{scan_id}/check",
             {"Authorization": f"Bearer {token}"},
-            {"text": text, "sandbox": False},
+            {"text": text, "sandbox": self.sandbox},
         )
         return clamp01(float(data["summary"]["ai"]))  # 0-1
 

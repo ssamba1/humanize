@@ -51,6 +51,10 @@ api = [
 commercial = [
     "requests>=2.28",
 ]
+# Browser-driven free-web-UI checking (no API key). Also run: playwright install chromium
+browser = [
+    "playwright>=1.40",
+]
 dev = [
     "pytest>=8",
     "ruff>=0.4",
