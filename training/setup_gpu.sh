@@ -4,6 +4,8 @@
 #    or:  REPO_URL=https://github.com/you/humanize.git bash setup_gpu.sh
 set -euo pipefail
 
+# Model: Qwen2.5-3B fits >=24GB VRAM (RTX 6000 Ada / L40S / H100). On a 20GB RTX 4000 Ada, run with
+# MODEL=Qwen/Qwen2.5-1.5B-Instruct. Smoke-test the pipeline first: STEPS=2 MODEL=Qwen/Qwen2.5-0.5B-Instruct
 MODEL="${MODEL:-Qwen/Qwen2.5-3B-Instruct}"
 TIER="${TIER:-full}"
 STEPS="${STEPS:-500}"
