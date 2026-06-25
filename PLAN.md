@@ -1,95 +1,95 @@
-# Plan: `humanizer` — research prototype + eval harness
+# Plan: `humanize` — a public Claude skill (research prototype + eval harness)
 
 ## Context
 
-We completed verified deep research (`Humanize/humanizer-research-report.md`) on AI-text detectors and evasion. The single strongest **training-free** technique in the literature is **closed-loop, detector-feedback adversarial paraphrasing** (arXiv 2506.07001: −88% TPR@1%FPR, transfers across detectors, quality preserved) — and *no shipping commercial humanizer does it*; they do blind single-pass paraphrasing and plateau at 60–80% bypass. This repo builds and proves that loop.
+Verified deep research (`humanizer-research-report.md`) shows the strongest **training-free** evasion technique is a **closed-loop detector-feedback rewrite** (arXiv 2506.07001: −88% TPR@1%FPR, transfers across detectors, quality preserved) — and no shipping humanizer does it; they do blind single-pass paraphrasing (60–80% plateau).
 
-**v1 goal (locked with user):** a Python library + CLI that humanizes AI text via a hosted-LLM detector-feedback loop scored against **open-source detector proxies**, plus a benchmark harness that proves the loop beats single-pass baselines. No GPU training, no commercial detector keys, no web UI. Greenfield repo at `C:\Users\Admin\Humanize`.
+**Goal (locked):** ship this loop as a **publicly distributable Claude skill** — any Claude Code user installs it and runs `/humanize`. Python research prototype + eval harness underneath. No GPU training, no commercial detector keys, no web UI. Greenfield repo at `C:\Users\Admin\Humanize` (git initialized).
 
-**Scope decisions:** Python · open-source proxy detectors only · hosted LLM API (Anthropic Claude default, OpenAI optional) for rewriting, training-free · prototype + eval, not SaaS.
+**Key reframe — Claude *is* the rewriter.** The skill runner (Claude) performs the rewrites; the loop is orchestrated by `SKILL.md`. No external LLM API key needed → lowest install friction. Detectors are local lightweight scripts that score text; Claude reads scores and re-rewrites until the ensemble is under threshold while semantic similarity holds.
 
-## Architecture (the core loop)
+## How it works (the loop, driven by SKILL.md)
 
 ```
-input text
-  → preserve-lock (mask citations, named entities, numbers, quotes)
-  → LLM rewriter (style-injection + per-detector feedback prompt)
-  → detector ensemble scores each proxy → P(AI) ∈ [0,1]
-  → if max-proxy < threshold AND semantic-sim ≥ 0.76 → stop; else feed scores back, re-rewrite
-  → (cap iterations) → restore locked spans → output + per-detector report
+/humanize <text|file>
+  Claude: preserve-lock citations/entities/numbers/quotes (scripts/preserve.py)
+  repeat up to N iters:
+    score = scripts/score.py <text>     # ensemble of local detectors → {detector: P(AI)}, max
+    sim   = scripts/quality.py <orig> <text>   # semantic similarity (must stay ≥ 0.76)
+    if max(score) < threshold and sim ok: break
+    Claude rewrites text using the per-detector scores as feedback
+      (raise burstiness + perplexity, vary sentence architecture, keep meaning + sentinels)
+  restore locked spans → output humanized text + before/after detector table
 ```
 
-Targets the **max** proxy score (multi-detector evasion, per report gap #3). Quality gate uses the 0.76 P-SP acceptability bar from the watermark-removal paper. Preserve-lock is the citation/meaning differentiator (report gap #5).
+Targets the **max** proxy (multi-detector evasion, report gap #3). Quality gate = 0.76 P-SP bar (watermark-removal paper). Preserve-lock = citation/meaning differentiator (gap #5). The whole loop is `SKILL.md` instructions + 3 small scripts; Claude supplies the rewrite intelligence.
 
-## Reusable building blocks (confirmed to exist)
+## Distribution as a Claude skill
 
-| Component | Use | CPU? |
+- `humanize/SKILL.md` — frontmatter `name: humanize`, `description:` tuned to trigger on "humanize text / bypass AI detector / make this sound human / reduce AI detection". Body = the loop procedure above, with explicit stop conditions and the feedback-rewrite rubric.
+- Installable two ways: (a) copy `humanize/` into `~/.claude/skills/`; (b) as a plugin dir. README documents both.
+- **Tiered deps so it's low-friction public:**
+  - **lite** (zero-ML, default fallback): perplexity+burstiness heuristic via a tiny script — no model download. Weak but instant.
+  - **full**: installs `transformers`+`torch`, pulls RoBERTa-OpenAI + MAGE (CPU). Real proxy signal.
+  - **heavy** (opt-in flag): Binoculars (2×Falcon-7B, GPU). For serious eval only.
+  - `score.py` auto-detects what's installed and degrades gracefully (logs which tier ran).
+
+## Reusable building blocks (confirmed)
+
+| Component | Use | Tier |
 |---|---|---|
-| `openai-community/roberta-base-openai-detector` | HF `pipeline("text-classification")` | ✅ fast |
-| `yaful/MAGE` (Longformer) | HF pipeline; repo supports `device='cpu'` | ✅ |
-| Fast-DetectGPT (github baoguangsheng/fast-detect-gpt) | scoring model `gpt-neo-2.7B` or `gpt2` | ✅ slow |
-| Perplexity+burstiness (GPTZero-style) | ~15 lines, GPT-2 via transformers, std-dev of sentence PPL | ✅ |
-| Binoculars (github ahans30/Binoculars, BSD-3) | 2×Falcon-7B — **optional, GPU/4-bit only** | ❌ gate behind flag |
-| Datasets: `liamdugan/raid` (adversarial, best), `Hello-SimpleAI/HC3` (small bootstrap), `yaful/MAGE` (cross-LLM) | eval gauntlet | — |
-
-Note `IMGTB` (github kinit-sk/IMGTB) wraps several of these — pattern-match its plugin API, but write thin adapters (cleaner than depending on an unmaintained research CLI).
+| Perplexity+burstiness (GPTZero-style) | ~15 lines, GPT-2 sentence-PPL variance | lite/full |
+| `openai-community/roberta-base-openai-detector` | HF pipeline | full (CPU) |
+| `yaful/MAGE` (Longformer) | HF pipeline, `device='cpu'` | full (CPU) |
+| Fast-DetectGPT (github baoguangsheng/fast-detect-gpt, gpt-neo) | optional adapter | full (CPU, slow) |
+| Binoculars (github ahans30/Binoculars, BSD-3) | 2×Falcon-7B | heavy (GPU) |
+| sentence-transformers (all-MiniLM) | semantic-sim quality gate | full |
+| Datasets `liamdugan/raid`, `Hello-SimpleAI/HC3`, `yaful/MAGE` | eval gauntlet | eval only |
 
 ## Repo layout
 
 ```
 Humanize/
-  pyproject.toml            # deps, console_script entrypoint
-  README.md                 # what it is, install, ethics/research-only note
-  .env.example              # ANTHROPIC_API_KEY / OPENAI_API_KEY
-  src/humanizer/
-    config.py               # pydantic settings: thresholds, model ids, max_iters
-    detectors/
-      base.py               # Detector protocol: name, score(text)->float P(AI) in [0,1]
-      roberta_openai.py  mage.py  fast_detectgpt.py
-      perplexity_burstiness.py
-      binoculars.py         # optional, GPU flag
-      ensemble.py           # collect scores, aggregate (max + per-detector dict)
-    rewriter/
-      base.py               # Rewriter protocol: rewrite(text, scores, feedback)->text
-      llm_rewriter.py       # Anthropic default; OpenAI optional; retries/cost track
-      prompts.py            # style-injection + detector-feedback templates
-    preserve/lock.py        # mask/restore citations(regex), entities(spaCy NER), numbers, quotes
-    quality/semantic.py     # sentence-transformers cosine (all-MiniLM) ~ P-SP proxy
-    loop/humanize.py        # the orchestrator (core algorithm above)
-    cli.py                  # `humanize "text"` | `--file x.txt` | `--report`
+  LICENSE                       # MIT (public distribution)
+  README.md                     # what it is, install (both ways), tiers, ethics/research note
+  pyproject.toml                # extras: [full], [heavy], [eval]; console script `humanize-score`
+  humanize/                     # THE SKILL (this dir is what users install)
+    SKILL.md                    # name+description trigger; the loop procedure + rewrite rubric
+    scripts/
+      score.py                  # ensemble detector scoring → JSON {detector: P(AI), max}; tier auto-detect
+      preserve.py               # mask/restore citations(regex)+entities(spaCy)+numbers+quotes
+      quality.py                # semantic similarity (sentence-transformers; lite fallback = token-overlap)
+    detectors/                  # adapters imported by score.py
+      base.py  perplexity_burstiness.py  roberta_openai.py  mage.py  fast_detectgpt.py  binoculars.py
+    references/                 # optional: thresholds.md, prompt-rubric.md the skill can load
   eval/
-    datasets.py             # load + sample RAID / HC3 / MAGE subsets
-    benchmark.py            # run gauntlet, pre/post scores, bypass rate, sim, iters, cost
-    baselines.py            # no-op, single-pass "rewrite human" prompt (the thing to beat)
-    report.py               # markdown + JSON metrics
-  tests/                    # adapters, preserve round-trip, loop integration
+    datasets.py  benchmark.py  baselines.py  report.py
+  tests/
 ```
 
 ## Implementation steps
 
-1. **Scaffold** — `pyproject.toml` (deps: `transformers, torch` CPU, `sentence-transformers`, `spacy`, `anthropic`, `datasets`, `typer`, `pydantic`, `pytest`; optional `openai`, `bitsandbytes`), `config.py`, `.env.example`, `README` with research-only framing.
-2. **Detector layer** — `Detector` protocol returning normalized P(AI)∈[0,1]; implement RoBERTa-OpenAI, MAGE, perplexity-burstiness first (all CPU). Fast-DetectGPT adapter (gpt2/gpt-neo). `ensemble.py` returns `{name: score}` + `max`. Binoculars behind `--enable-binoculars` flag. Cache loaded models.
-3. **Preserve-lock** — regex for inline citations (APA/IEEE/MLA/numeric) + numbers/quotes, spaCy NER for entities; replace with sentinels, restore after loop. Unit-test round-trip integrity.
-4. **Rewriter** — `LLMRewriter` calls hosted API with `prompts.py`: (a) base style-injection ("rewrite with human burstiness/perplexity, keep meaning, preserve sentinel tokens"), (b) feedback variant injecting which detectors flagged it and their scores. Track tokens/cost. Provider-agnostic via protocol.
-5. **Quality gate** — `semantic.py` cosine similarity (sentence-transformers); enforce ≥ 0.76, reject-and-retry on violation.
-6. **Core loop** — `humanize.py`: lock → iterate (score → check stop → feedback rewrite) up to `max_iters` (default 5), early-exit when max-proxy < threshold & sim ok → restore → return `(text, history)` where history has per-iter scores/sim/cost.
-7. **CLI** — `typer` app: humanize a string/file, print per-detector before/after table + final text; `--report` dumps JSON.
-8. **Eval harness** — `datasets.py` samples ~100 AI texts (HC3 to bootstrap, RAID for the real test); `benchmark.py` runs no-op / single-pass / full-loop over the sample, computes per-detector pre→post, **bypass rate** (% below threshold), semantic sim, iters, $/text; `report.py` writes a markdown comparison table. **Success = full-loop bypass rate > single-pass baseline at equal-or-better semantic similarity** (the report's thesis).
+1. **Scaffold + license** — `pyproject.toml` with extras (`full`=transformers/torch/sentence-transformers/spacy, `heavy`=bitsandbytes, `eval`=datasets), MIT `LICENSE`, README with install (both methods) + tier table + research-only/ethics note.
+2. **Detector layer** — `detectors/base.py` protocol `score(text)->float P(AI)∈[0,1]`. Implement perplexity_burstiness (lite, no heavy dep beyond a small LM — or pure-heuristic if torch absent), roberta_openai, mage (all CPU). Fast-DetectGPT + Binoculars adapters guarded by availability. `score.py` loads whatever tier is installed, emits JSON, prints which tier ran.
+3. **Preserve-lock** — `preserve.py`: regex citations (APA/IEEE/MLA/numeric) + numbers + quotes, spaCy NER (optional; regex-only fallback) → sentinels; restore. Round-trip tested.
+4. **Quality gate** — `quality.py`: sentence-transformers cosine ≥ 0.76; lite fallback = normalized token-overlap so it runs zero-install.
+5. **SKILL.md** — frontmatter (name/description for triggering) + the loop: lock → score → check stop (`max < threshold` & sim ok) → if not, rewrite with the per-detector scores as explicit feedback per the rubric → cap at N iters → restore → print before/after table. Include the rewrite rubric (burstiness/perplexity/sentence-architecture, preserve meaning + sentinels) and threshold defaults in `references/`.
+6. **CLI helper** — `humanize-score` console entry wrapping `score.py` for manual/CI use.
+7. **Eval harness** — `datasets.py` samples AI texts (HC3 bootstrap, RAID real test); `benchmark.py` runs no-op / single-pass / full-loop, computes per-detector pre→post, **bypass rate**, semantic sim, iters; `report.py` writes markdown table. **Success = full-loop bypass rate > single-pass at equal-or-better sim** (the report's thesis). (Loop here scripted to mimic the skill so it's measurable without a human in the seat.)
 
 ## Verification
 
-- **Unit:** each detector adapter returns [0,1] on a known human and known AI sample (AI scores higher); preserve-lock restores citations/numbers/entities byte-exact; semantic sim returns ~1.0 for identical text.
-- **Integration:** run `humanize` on a sample AI paragraph → assert final max-proxy score < initial AND sim ≥ 0.76 AND iterations ≤ max.
-- **End-to-end eval:** `python -m eval.benchmark --dataset hc3 --n 100` → produces metrics report; confirm full-loop bypass rate beats single-pass. (Run on RAID for the headline number once HC3 smoke passes.)
-- **Smoke:** `humanize --file sample.txt` prints a before/after detector table.
+- **Unit:** each detector returns [0,1] (AI > human on known samples); preserve-lock restores citations/numbers/entities exactly; quality sim ≈1.0 on identical text; `score.py` runs in lite tier with zero ML installed.
+- **Skill smoke:** install `humanize/` into `~/.claude/skills/`, run `/humanize` on a sample AI paragraph → final max-proxy score < initial, sim ≥ 0.76, ≤ N iters, before/after table printed.
+- **End-to-end eval:** `python -m eval.benchmark --dataset hc3 --n 100` → metrics report; confirm full-loop beats single-pass. Re-run on RAID for the headline number.
 
-## Risks / honest caveats (to put in README)
+## Risks / honest caveats (README)
 
-- Proxy detectors ≠ commercial detectors. RoBERTa-OpenAI is weak on modern LLM text; treat the ensemble as a *signal*, not ground truth. Beating proxies is necessary, not sufficient — v2 adds paid-API validation (Originality/GPTZero) behind a flag.
-- Binoculars (the strongest proxy) needs a GPU; v1 runs the CPU-feasible four by default and notes the gap.
-- Loop cost scales with iterations × LLM calls — cap iterations, log cost per run.
-- Repo is a research/evaluation harness; README states research-only + the legitimate defensive use (non-native writers falsely flagged at 61% FPR, report §4).
+- Proxy detectors ≠ commercial. RoBERTa-OpenAI is weak on modern text; ensemble is a *signal*, not ground truth. v2 adds paid-API validation behind a flag.
+- lite tier is a weak heuristic — good for zero-install demo, not a real evasion claim. Full tier is the honest baseline; Binoculars (GPU) is the strongest proxy.
+- Claude-as-rewriter means quality/evasion depend on the running model; document expected behavior.
+- Research/eval harness + legitimate defensive use (non-native writers falsely flagged at 61% FPR, report §4). State research-only in README + SKILL.md.
 
-## Out of scope for v1 (later phases)
+## Out of scope for v1 (later)
 
-Local DPO/RL-against-ensemble (the StealthRL/MASH moat — needs GPU), commercial-detector API validation, web UI / auth / billing, back-translation & token-mixing attack modules.
+Local DPO/RL-against-ensemble (StealthRL/MASH moat — GPU), commercial-detector API validation, hosted-API rewriter option, web UI, back-translation/token-mixing modules, marketplace/plugin publishing automation.
