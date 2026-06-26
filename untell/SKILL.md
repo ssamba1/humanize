@@ -35,6 +35,20 @@ dependencies** (lite tier) and self-resolve their own package, so no `pip instal
 the scripts auto-detect and use it; you don't change anything. (If `pip install`ed, the
 `untell-score` / `untell-sentences` / `untell-verify` console commands also work from any cwd.)
 
+**Pick the right Python interpreter.** The full detector tier needs `torch`/`transformers` in the
+interpreter you invoke. Before the first script call, choose `PY` in this order and use it for every
+`python scripts/*.py` below:
+1. `$UNTELL_PYTHON` if it is set;
+2. a project virtualenv if one exists — `./.venv/Scripts/python.exe` (Windows) or `./.venv/bin/python`
+   (macOS/Linux); likewise `./venv/...`;
+3. otherwise plain `python`.
+
+A bare `python` is often a system/conda base whose ML stack is broken (e.g. a NumPy 2.x ↔ torch
+mismatch), which silently drops you to the weak **lite** tier. The scripts now report this honestly:
+if `score` returns `"tier": "lite"` with a `warning` / `failed_detectors` when you wanted full, the
+interpreter lacks a working ML stack — re-run with a venv python that has `.[full]` installed (see the
+README "Troubleshooting" section), and tell the user their detectors were excluded, not silently faked.
+
 ## The loop
 
 Defaults live in `references/thresholds.md` (threshold `0.30`, similarity bar `0.76`, max `5`
