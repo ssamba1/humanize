@@ -2,7 +2,9 @@
 #   irm https://raw.githubusercontent.com/ssamba1/untell/main/install.ps1 | iex
 $ErrorActionPreference = "Stop"
 
-$repo = "https://github.com/ssamba1/untell"
+# Source repo; override with $env:UNTELL_REPO (a URL or a local path) — used by CI to
+# install from the checked-out copy instead of the published main branch.
+$repo = if ($env:UNTELL_REPO) { $env:UNTELL_REPO } else { "https://github.com/ssamba1/untell" }
 $skillsDir = if ($env:CLAUDE_SKILLS_DIR) { $env:CLAUDE_SKILLS_DIR } else { Join-Path $env:USERPROFILE ".claude\skills" }
 $dest = Join-Path $skillsDir "untell"
 $tmp  = Join-Path $env:TEMP ("untell-" + [guid]::NewGuid().ToString())
@@ -12,7 +14,15 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 }
 
 Write-Host "Fetching untell..."
-git clone --depth 1 $repo $tmp 2>$null | Out-Null
+# Run git with ErrorActionPreference relaxed: PowerShell 5.1 turns git's stderr
+# progress ("Cloning into ...") into a terminating NativeCommandError otherwise.
+# The native exit code is the real success signal.
+$prevEAP = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
+git clone --depth 1 --quiet $repo $tmp 2>&1 | Out-Null
+$cloneExit = $LASTEXITCODE
+$ErrorActionPreference = $prevEAP
+if ($cloneExit -ne 0) { Write-Error "git clone failed (exit $cloneExit)." }
 
 New-Item -ItemType Directory -Force (Split-Path $dest) | Out-Null
 if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }

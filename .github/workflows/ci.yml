@@ -71,3 +71,43 @@ jobs:
         env:
           HUMANIZE_RUN_FULL_TIER: "1"
         run: pytest -q
+
+  windows-install:
+    name: windows installer + zero-dep run (Windows PowerShell 5.1)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # `shell: powershell` is Windows PowerShell 5.1 — the exact interpreter where the
+      # installer used to abort (git's stderr -> terminating NativeCommandError). Installing
+      # from the checked-out copy (UNTELL_REPO) regression-tests *this* commit's installer.
+      - name: Install the skill via install.ps1 (Windows PowerShell 5.1)
+        shell: powershell
+        env:
+          UNTELL_REPO: ${{ github.workspace }}
+          CLAUDE_SKILLS_DIR: ${{ runner.temp }}\claude-skills
+        run: .\install.ps1
+
+      - name: Lite-tier score runs zero-dep from an unrelated cwd
+        shell: powershell
+        env:
+          CLAUDE_SKILLS_DIR: ${{ runner.temp }}\claude-skills
+        run: |
+          # Relax EAP: GitHub's powershell preamble sets 'stop', which would turn score.py's
+          # harmless stderr note into a terminating error. Gate on the real exit code instead.
+          $ErrorActionPreference = "Continue"
+          $score = Join-Path $env:CLAUDE_SKILLS_DIR "untell\scripts\score.py"
+          if (-not (Test-Path $score)) { throw "skill not installed: $score is missing" }
+          Set-Location $env:USERPROFILE   # prove it runs from an unrelated cwd, no PYTHONPATH
+          $out = python $score "Moreover, the framework leverages synergies to facilitate robust, scalable outcomes." --threshold 0.30
+          if ($LASTEXITCODE -ne 0) { throw "score.py failed (exit $LASTEXITCODE)" }
+          Write-Host $out
+          $json = $out | ConvertFrom-Json
+          if ($json.tier -ne "lite") { throw "expected lite tier (zero-dep), got '$($json.tier)'" }
+          if ($null -eq $json.max)   { throw "score output has no 'max' field" }
+          Write-Host "OK: zero-dep lite score ran from $($PWD.Path) - tier=$($json.tier) max=$($json.max)"
