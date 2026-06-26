@@ -18,8 +18,11 @@ Free. Open source. Honest about what it can and can't do.
 [![Live site](https://img.shields.io/badge/site-ssamba1.github.io%2Funtell-2ea44f.svg)](https://ssamba1.github.io/untell/)
 [![good first issues](https://img.shields.io/github/issues/ssamba1/untell/good%20first%20issue.svg?label=good%20first%20issues&color=7057ff)](https://github.com/ssamba1/untell/labels/good%20first%20issue)
 
-**Beat GPTZero · ZeroGPT · Originality.ai · Turnitin-class · Copyleaks · Winston · Sapling** — by optimizing
-against them, not guessing. [Why this is the most complete open humanizer →](#-why-this-is-the-best-open-source-ai-humanizer)
+**Optimize against real detectors — with the detector *in the loop*, not blind guessing.** Out of the box it
+beats the **free web checkers** (ZeroGPT, live-proven 100%→0%). To actually beat **GPTZero · Originality.ai ·
+Turnitin-class · Copyleaks**, you wire *their* API into the loop (key-gated, paid) — the bundled **local
+proxies alone do *not* predict those, and we [say so plainly](#honest-caveats)** rather than fake a "99% human."
+[Why this is the most complete open humanizer →](#-why-this-is-the-best-open-source-ai-humanizer)
 
 </div>
 
@@ -343,6 +346,11 @@ loop — `untell-loop` loads the models once — over many one-off score calls. 
 
 - **Proxy ≠ commercial.** The local detectors approximate; they aren't Originality.ai / Turnitin. The
   ensemble is a *signal*, not a verdict. "Passes all checkers" is unprovable against detectors you don't run.
+- **Local proxies do NOT predict GPTZero / Originality.** Measured: a rewrite the bundled local ensemble rates
+  *low* can still score **100% AI on GPTZero**, which runs dedicated anti-humanizer ("AI Paraphrasing")
+  detection. A low local `max` means "passed the weak local proxies," **not** "undetectable." The only way to
+  optimize for a specific commercial detector is to put **it** in the loop (`--tier commercial` + its API key)
+  — and even then GPTZero/Originality are the hardest and nobody beats them reliably.
 - **lite is a demo.** The zero-install heuristic shows the loop; it's not an evasion claim. The full tier is
   the honest baseline; Binoculars (GPU) is the strongest proxy.
 - **Claude is the rewriter.** Output quality and evasion depend on the running model.
