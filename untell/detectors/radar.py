@@ -32,8 +32,8 @@ class RadarDetector:
     _warned = False
 
     def available(self) -> bool:
-        if not os.environ.get("HUMANIZE_ENABLE_RADAR"):
-            return False  # opt-in only (non-commercial license)
+        if not (os.environ.get("UNTELL_ENABLE_RADAR") or os.environ.get("HUMANIZE_ENABLE_RADAR")):
+            return False  # opt-in only (non-commercial license); HUMANIZE_ENABLE_RADAR kept as a legacy alias
         try:
             import torch  # noqa: F401
             import transformers  # noqa: F401
@@ -49,26 +49,26 @@ class RadarDetector:
             RadarDetector._model = AutoModelForSequenceClassification.from_pretrained(_MODEL_ID).eval()
         return RadarDetector._tokenizer, RadarDetector._model
 
-    def score(self, text: str) -> float:
+    def score(self, text: str) -> float | None:
+        # None == "no signal" (empty / unavailable): excluded from the aggregate rather than
+        # folded in as a fake neutral 0.5. A load/scoring failure propagates so score_text records
+        # it in failed_detectors (matching the other supervised adapters' contract).
         if not self.available() or not text.strip():
-            return 0.5
+            return None
         if not RadarDetector._warned:
             import sys
 
             print(
-                "[untell] RADAR enabled — TrustSafeAI/RADAR-Vicuna-7B is NON-COMMERCIAL licensed; "
+                "[untell] RADAR enabled - TrustSafeAI/RADAR-Vicuna-7B is NON-COMMERCIAL licensed; "
                 "research/evaluation use only.",
                 file=sys.stderr,
             )
             RadarDetector._warned = True
-        try:
-            import torch
-            import torch.nn.functional as F
+        import torch
+        import torch.nn.functional as F
 
-            tok, model = self._load()
-            inputs = tok(text, return_tensors="pt", truncation=True, max_length=512)
-            with torch.no_grad():
-                p_ai = F.softmax(model(**inputs).logits, dim=-1)[0, 0].item()  # index 0 = AI
-            return clamp01(float(p_ai))
-        except Exception:
-            return 0.5
+        tok, model = self._load()
+        inputs = tok(text, return_tensors="pt", truncation=True, max_length=512)
+        with torch.no_grad():
+            p_ai = F.softmax(model(**inputs).logits, dim=-1)[0, 0].item()  # index 0 = AI
+        return clamp01(float(p_ai))

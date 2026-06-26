@@ -2,14 +2,14 @@
 
 **Scope of the claim.** "Best humanizer *repo* available" means best **open-source** humanizer codebase
 on GitHub. Commercial tools (Undetectable.ai, StealthGPT, WriteHuman…) are closed SaaS, not repos —
-out of scope. We surveyed the open field blind (GitHub topics, papers-with-code, 15 repos). Verdict
-below is evidenced, not asserted, and states honestly where we are *not* #1.
+out of scope. We surveyed the open field ourselves (GitHub topics, papers-with-code, ~110 repos; see
+`humanizer-research-report.md`). Verdict below is evidenced, not asserted, and states honestly where we are *not* #1.
 
 ---
 
 ## The decisive finding
 
-The independent survey of the open-source humanizer field concluded, verbatim:
+Our own deep-research survey of the open-source humanizer field (`humanizer-research-report.md`) concluded, verbatim:
 
 > "There is **no** open-source repo that combines (a) a real evasion approach validated against
 > multiple live detectors, (b) a quality/meaning-preservation verifier, (c) an iterative
@@ -19,7 +19,7 @@ The independent survey of the open-source humanizer field concluded, verbatim:
 
 | Gap criterion | This repo |
 |---|---|
-| (a) validated vs **multiple live detectors** | 8 local (incl. RADAR, Binoculars, Fast-DetectGPT, MAGE, HC3) + **6 commercial API adapters** + browser checkers; **live-proven 100%→0% on ZeroGPT** |
+| (a) validated vs **multiple live detectors** | 7 local (incl. RADAR, Binoculars, Fast-DetectGPT, MAGE, HC3) + **6 commercial API adapters** + browser checkers; **live-proven 100%→0% on ZeroGPT** |
 | (b) quality/meaning **verifier** | semantic-similarity gate + preserve-lock (citations/numbers/entities) + `untell-verify` |
 | (c) **iterative detector-feedback loop at inference** | the core loop + **per-sentence targeting** (rewrite only the flagged sentences) |
 | (d) **user-installable package** | `pip install` + 5 console scripts (`untell-score/loop/verify/prove/sentences`) **and** a Claude skill |

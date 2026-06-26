@@ -61,7 +61,7 @@ class MageDetector:
                 print(
                     f"[untell] mage failed to load and was EXCLUDED from the ensemble "
                     f"({type(exc).__name__}: {str(exc)[:140]}). "
-                    "Often a NumPy 2.x / huggingface_hub mismatch — see README troubleshooting.",
+                    "Often a NumPy 2.x / huggingface_hub mismatch - see README troubleshooting.",
                     file=sys.stderr,
                 )
                 MageDetector._warned = True

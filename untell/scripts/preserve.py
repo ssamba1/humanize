@@ -13,8 +13,9 @@ Sentinels look like ``⟦HZ0007⟧`` — unlikely to occur in prose and stable a
 single unbreakable token (the skill instructs Claude to keep them intact). Entity masking uses
 spaCy NER when installed; otherwise regex-only locking still covers citations/numbers/quotes.
 
-Round-trip guarantee: ``restore(*lock(t)) == t`` for any ``t`` whose locked spans don't already
-contain a sentinel (asserted in tests).
+Round-trip guarantee: ``restore(*lock(t)) == t`` for any text ``t`` — including text that already
+contains literal ``⟦HZxxxx⟧`` sentinels, which are themselves locked so they survive a rewrite
+verbatim instead of being rewritten by ``restore`` (asserted in tests).
 """
 
 from __future__ import annotations
@@ -25,10 +26,14 @@ _SENTINEL_RE = re.compile(r"⟦HZ\d{4}⟧")
 
 # Ordered, non-overlapping patterns. Earlier patterns win on overlap (handled by interval merge).
 _PATTERNS: list[tuple[str, re.Pattern]] = [
+    # Sentinel literals already present in the INPUT must themselves be locked. Otherwise lock()
+    # may reuse the same ⟦HZxxxx⟧ token for a real span, and restore() would then rewrite the
+    # user's literal token too — corrupting the round-trip. Lock them first so each maps uniquely.
+    ("sentinel", _SENTINEL_RE),
     # Bracketed numeric citations: [12], [3, 4], [1-5]
     ("citation", re.compile(r"\[\d+(?:\s*[-,]\s*\d+)*\]")),
     # Parenthetical author-year (APA/MLA): (Smith, 2020), (Smith & Lee, 2019, p. 4)
-    ("citation", re.compile(r"\([A-Z][A-Za-z'’.-]+(?:\s+(?:&|and|et al\.?)\s*[A-Za-z'’.-]*)*,?\s*\d{4}[a-z]?(?:,\s*p+\.?\s*\d+)?\)")),
+    ("citation", re.compile(r"\([A-Z][A-Za-z'’.-]+(?:\s+(?:&|and|et al\.?)\s*[A-Za-z'’.-]*)*,?\s*\d{4}[a-z]?(?:,\s*pp?\.?\s*\d+)?\)")),
     # Narrative author-year: Smith (2020), Smith et al. (2019)
     ("citation", re.compile(r"[A-Z][A-Za-z'’.-]+(?:\s+et al\.?)?\s+\(\d{4}[a-z]?\)")),
     # DOIs and URLs
@@ -136,10 +141,9 @@ def main(argv: list[str] | None = None) -> int:
     import json
     import sys
 
-    try:  # best-effort UTF-8 stdout so restored text with unicode never crashes a cp1252 console
-        sys.stdout.reconfigure(encoding="utf-8")
-    except Exception:
-        pass
+    from untell.scripts.io_utils import configure_utf8_io
+
+    configure_utf8_io()  # UTF-8 stdin/stdout/stderr (Windows defaults to cp1252)
 
     parser = argparse.ArgumentParser(prog="untell.scripts.preserve")
     parser.add_argument("text", nargs="?", help="text to lock, or masked text to restore")

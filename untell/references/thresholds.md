@@ -21,8 +21,9 @@ These are the knobs the `untell` loop uses. Override per-run if the user asks.
 
 `untell-score` / `score.py` emit:
 
-- `tier` — `lite` (heuristic, weak), `full` (RoBERTa-OpenAI + MAGE + GPT-2 PPL, real CPU signal),
-  or `heavy` (adds Binoculars, GPU). Always report which tier ran.
+- `tier` — `lite` (heuristic, weak), `full` (RoBERTa-OpenAI + HC3-RoBERTa + Fast-DetectGPT + GPT-2
+  perplexity; MAGE when its config loads — real CPU signal), or `heavy` (adds Binoculars, GPU).
+  Always report which tier ran.
 - `detectors` — per-detector P(AI); use these to decide *what* to change in the rewrite.
 - `max` / `mean` — aggregate proxies; the loop drives `max`.
 - `flagged` — `true` when `max >= threshold` (keep rewriting).

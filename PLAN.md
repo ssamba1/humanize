@@ -4,7 +4,7 @@
 
 Verified deep research (`humanizer-research-report.md`) shows the strongest **training-free** evasion technique is a **closed-loop detector-feedback rewrite** (arXiv 2506.07001: −88% TPR@1%FPR, transfers across detectors, quality preserved) — and no shipping humanizer does it; they do blind single-pass paraphrasing (60–80% plateau).
 
-**Goal (locked):** ship this loop as a **publicly distributable Claude skill** — any Claude Code user installs it and runs `/untell`. Python research prototype + eval harness underneath. No GPU training, no commercial detector keys, no web UI. Greenfield repo at `C:\Users\Admin\Untell` (git initialized).
+**Goal (locked):** ship this loop as a **publicly distributable Claude skill** — any Claude Code user installs it and runs `/untell`. Python research prototype + eval harness underneath. No GPU training, no commercial detector keys, no web UI. Greenfield repo (git initialized).
 
 **Key reframe — Claude *is* the rewriter.** The skill runner (Claude) performs the rewrites; the loop is orchestrated by `SKILL.md`. No external LLM API key needed → lowest install friction. Detectors are local lightweight scripts that score text; Claude reads scores and re-rewrites until the ensemble is under threshold while semantic similarity holds.
 

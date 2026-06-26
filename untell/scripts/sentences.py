@@ -51,10 +51,9 @@ def score_sentences(text: str, tier: str = "lite", threshold: float = DEFAULT_TH
 
 
 def main(argv: list[str] | None = None) -> int:
-    try:
-        sys.stdout.reconfigure(encoding="utf-8")
-    except Exception:
-        pass
+    from untell.scripts.io_utils import configure_utf8_io
+
+    configure_utf8_io()  # UTF-8 stdin/stdout/stderr (Windows defaults to cp1252)
     parser = argparse.ArgumentParser(prog="untell-sentences", description="Per-sentence AI scoring.")
     parser.add_argument("text", nargs="?")
     parser.add_argument("--file", "-f")

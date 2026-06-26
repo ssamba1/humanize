@@ -6,7 +6,7 @@ Some detectors have no affordable API but a free web checker. This drives a real
 **Config-driven.** A site is just a ``SiteConfig`` (url + selectors). One built-in ships (ZeroGPT,
 confirmed live 2026-06: input ``#textArea``, "Detect Text" button clicked via JS to dodge an ad
 overlay, result ``.percentage-div`` → "100%AI GPT*"). Add your own sites without code via a JSON
-file — see ``get_browser_checker`` / ``HUMANIZE_BROWSER_SITES``.
+file — see ``get_browser_checker`` / ``UNTELL_BROWSER_SITES``.
 
 Reality check (probed 2026-06): most free detectors are now bot-gated and NOT automatable —
 QuillBot (reCAPTCHA), GPTZero web (redirects to a login app), Scribbr/Brandwell (iframe widgets),
@@ -142,11 +142,11 @@ _BUILTINS: dict[str, SiteConfig] = {"zerogpt": ZEROGPT}
 
 
 def _user_sites() -> dict[str, SiteConfig]:
-    """Load user-defined sites from ``$HUMANIZE_BROWSER_SITES`` (a JSON path) or ``./browser_sites.json``.
+    """Load user-defined sites from ``$UNTELL_BROWSER_SITES`` (a JSON path; ``$HUMANIZE_BROWSER_SITES`` is a legacy alias) or ``./browser_sites.json``.
 
     JSON shape: ``{"sitename": {"url": ..., "input_selector": ..., "result_selector": ..., ...}}``.
     """
-    path = os.environ.get("HUMANIZE_BROWSER_SITES") or "browser_sites.json"
+    path = os.environ.get("UNTELL_BROWSER_SITES") or os.environ.get("HUMANIZE_BROWSER_SITES") or "browser_sites.json"
     try:
         with open(path, encoding="utf-8") as fh:
             raw = json.load(fh)
