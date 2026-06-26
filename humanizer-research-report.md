@@ -125,7 +125,7 @@ Input → [Preserve-lock: citations, entities, numbers, quotes]
 
 **Primary (papers):** 2304.02819 (non-native bias / Liang) · 2303.13408 (DIPPER) · 2401.12070 + openreview iARAKITHTH (Binoculars) · 2605.14240 (paraphrase fragility benchmark) · 2310.15264 (theoretical limits / PEGASUS) · 2411.05277 (green-list reverse-engineering) · 2602.08934 (StealthRL) · 2601.08564 (MASH) · 2603.03410 (SynthID layer-inflation) · 2505.05190 (SIRA) · 2504.17480 (CDG-KD scrubbing) · 2506.07001 (detector-feedback adversarial paraphrasing) · 2503.08708 (impossibility triangle, HMGC/TOBLEND) · 2511.03641 (EU-AI-Act watermark survey) · PMC12453642 (GPTZero scholarly bias) · 2503.18156 · 2504.17480.
 **Secondary:** infoq SynthID content-detection (2026-05).
-**Blog (directional, small-n benchmarks):** humanizerai, hayimsalomon "25 tools", skywork "12 humanizers", humanizemy/stealthgpt, textpulse, pangram best-detectors, gptzero perplexity explainer (primary-vendor), DetectGPT explainer.
+**Blog (directional, small-n benchmarks):** humanizerai, hayimsalomon "25 tools", skywork "12 humanizers", untellmy/stealthgpt, textpulse, pangram best-detectors, gptzero perplexity explainer (primary-vendor), DetectGPT explainer.
 
 ## Verification update (re-checked after spend limit lifted)
 Re-ran adversarial verification on the 4 sources whose votes were lost to the spend limit. Outcome — **the unverified pillars hold:**

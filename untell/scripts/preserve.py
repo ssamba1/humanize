@@ -1,6 +1,6 @@
 """Preserve-lock: mask spans that must survive a rewrite verbatim, then restore them.
 
-The humanize loop rewrites prose freely but must NOT alter citations, numeric facts, quoted
+The untell loop rewrites prose freely but must NOT alter citations, numeric facts, quoted
 material, or named entities. We replace each such span with an opaque sentinel before the
 rewrite and substitute the originals back afterward. This is the citation/meaning-integrity
 differentiator (report gap #5).
@@ -128,8 +128,8 @@ def restore(masked: str, mapping: dict[str, str]) -> str:
 def main(argv: list[str] | None = None) -> int:
     """CLI for lock (default) and restore.
 
-    Lock:    ``python -m humanize.scripts.preserve "text"`` -> JSON {masked, mapping}
-    Restore: ``python -m humanize.scripts.preserve --restore --mapping '<json>' "masked text"``
+    Lock:    ``python -m untell.scripts.preserve "text"`` -> JSON {masked, mapping}
+    Restore: ``python -m untell.scripts.preserve --restore --mapping '<json>' "masked text"``
              (or ``--mapping-file path.json``) -> the restored text
     """
     import argparse
@@ -141,7 +141,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception:
         pass
 
-    parser = argparse.ArgumentParser(prog="humanize.scripts.preserve")
+    parser = argparse.ArgumentParser(prog="untell.scripts.preserve")
     parser.add_argument("text", nargs="?", help="text to lock, or masked text to restore")
     parser.add_argument("--restore", action="store_true", help="restore sentinels using --mapping")
     parser.add_argument("--mapping", help="JSON object {sentinel: original} for --restore")

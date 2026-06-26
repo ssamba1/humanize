@@ -1,4 +1,4 @@
-"""humanize-verify tests — offline (commercial HTTP mocked)."""
+"""untell-verify tests — offline (commercial HTTP mocked)."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import json
 
 import pytest
 
-from humanize.detectors import commercial as C
-from humanize.scripts.verify import main, verify
+from untell.detectors import commercial as C
+from untell.scripts.verify import main, verify
 
 _ALL_ENV = [
     "ORIGINALITY_API_KEY",
@@ -94,7 +94,7 @@ def test_cli_exit_codes(monkeypatch, capsys):
 
 
 def test_browser_checker_score_counts(monkeypatch):
-    import humanize.browser_check as bc
+    import untell.browser_check as bc
 
     monkeypatch.setattr(bc.WebUIChecker, "available", lambda self: True)
     monkeypatch.setattr(bc.WebUIChecker, "check", lambda self, text, **k: 0.05)
@@ -106,7 +106,7 @@ def test_browser_checker_score_counts(monkeypatch):
 
 
 def test_browser_checker_unavailable_is_a_fail(monkeypatch):
-    import humanize.browser_check as bc
+    import untell.browser_check as bc
 
     monkeypatch.setattr(bc.WebUIChecker, "available", lambda self: False)
     v = verify("text", browser=["zerogpt"])

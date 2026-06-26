@@ -1,13 +1,13 @@
-"""End-to-end proof: humanize against the commercial checkers, then verify pass/fail.
+"""End-to-end proof: untell against the commercial checkers, then verify pass/fail.
 
 Given a hosted-LLM rewriter key (``ANTHROPIC_API_KEY`` / ``OPENAI_API_KEY``) **and** commercial
 detector keys, this runs the full closed loop at ``--tier commercial`` (with a safety margin) and
-then ``humanize-verify`` on the result — printing before/after scores per checker and an honest
+then ``untell-verify`` on the result — printing before/after scores per checker and an honest
 PASS/FAIL across every configured detector. This is the "does it actually pass the real detectors"
 button. It calls the paid APIs (loop scoring + before/after verify), so **it costs credits**.
 
-    humanize-prove "Your AI text" --margin 0.10
-    humanize-prove --file draft.txt --json
+    untell-prove "Your AI text" --margin 0.10
+    untell-prove --file draft.txt --json
 """
 
 from __future__ import annotations
@@ -16,16 +16,16 @@ import argparse
 import json
 import sys
 
-from humanize._env import load_env
-from humanize.scripts.run import humanize_text
-from humanize.scripts.score import DEFAULT_THRESHOLD
-from humanize.scripts.verify import verify
+from untell._env import load_env
+from untell.scripts.run import untell_text
+from untell.scripts.score import DEFAULT_THRESHOLD
+from untell.scripts.verify import verify
 
 
 def prove(text: str, threshold: float = DEFAULT_THRESHOLD, margin: float = 0.10, max_iters: int = 5) -> dict:
-    """Verify original -> humanize at commercial tier -> verify result. Returns a structured dict."""
+    """Verify original -> untell at commercial tier -> verify result. Returns a structured dict."""
     before = verify(text, threshold=threshold)
-    result = humanize_text(
+    result = untell_text(
         text, tier="commercial", threshold=threshold, margin=margin, max_iters=max_iters
     )
     if "error" in result:
@@ -44,7 +44,7 @@ def _render(v: dict) -> str:
     if "error" in v:
         return f"ERROR: {v['error']}"
     b, a = v["before"], v["after"]
-    lines = ["# humanize-prove (commercial tier)", ""]
+    lines = ["# untell-prove (commercial tier)", ""]
     if not a["configured"]:
         return (
             "No commercial checkers configured. Set the API keys (ORIGINALITY_API_KEY, GPTZERO_API_KEY, "
@@ -72,8 +72,8 @@ def main(argv: list[str] | None = None) -> int:
     except Exception:
         pass
     load_env()
-    parser = argparse.ArgumentParser(prog="humanize-prove", description=__doc__)
-    parser.add_argument("text", nargs="?", help="text to humanize + prove (or --file / stdin)")
+    parser = argparse.ArgumentParser(prog="untell-prove", description=__doc__)
+    parser.add_argument("text", nargs="?", help="text to untell + prove (or --file / stdin)")
     parser.add_argument("--file", "-f", help="read text from this file")
     parser.add_argument("--threshold", "-t", type=float, default=DEFAULT_THRESHOLD)
     parser.add_argument("--margin", type=float, default=0.10)

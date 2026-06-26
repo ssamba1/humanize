@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from humanize.scripts.quality import (
+from untell.scripts.quality import (
     DEFAULT_BAR,
     TOKEN_BAR,
     confidence,
@@ -14,7 +14,7 @@ from humanize.scripts.quality import (
     similarity,
     token_overlap,
 )
-from humanize.scripts.quality import (
+from untell.scripts.quality import (
     main as quality_main,
 )
 

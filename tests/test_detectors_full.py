@@ -17,8 +17,8 @@ try:
 except Exception as exc:  # pragma: no cover - environment dependent
     pytest.skip(f"torch/transformers unavailable: {exc}", allow_module_level=True)
 
-from humanize.detectors.base import load_detectors, resolved_tier  # noqa: E402
-from humanize.detectors.perplexity_burstiness import PerplexityBurstinessDetector  # noqa: E402
+from untell.detectors.base import load_detectors, resolved_tier  # noqa: E402
+from untell.detectors.perplexity_burstiness import PerplexityBurstinessDetector  # noqa: E402
 
 AI_TEXT = (
     "Artificial intelligence has fundamentally transformed numerous industries. Moreover, it has "
@@ -58,7 +58,7 @@ def test_perplexity_full_path_runs_and_is_bounded():
 def test_embedding_quality_path_active():
     # When sentence-transformers is installed, the quality gate must use the semantic metric.
     pytest.importorskip("sentence_transformers")
-    from humanize.scripts.quality import confidence, method, recommended_bar, similarity
+    from untell.scripts.quality import confidence, method, recommended_bar, similarity
 
     assert method() == "embedding"
     assert confidence() == "high"

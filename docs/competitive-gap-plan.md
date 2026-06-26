@@ -28,7 +28,7 @@ scheduled** (with the blocker named). No silent gaps.
 | Closed-loop detector-feedback rewrite | Adv-Paraphrasing, StealthHumanizer | ✅ **have** (our core, live-proven) |
 | Multi-detector ensemble (incl. paraphrase-robust) | StealthRL | ✅ **have** (8 local incl RADAR + 6 commercial + browser) |
 | Numeric detector score fed into the rewrite prompt | Adv-Paraphrasing | ✅ **have** (prompts name worst detectors + scores) |
-| Per-sentence targeting | (none did it cleanly) | ✅ **have** (`humanize-sentences`) |
+| Per-sentence targeting | (none did it cleanly) | ✅ **have** (`untell-sentences`) |
 | Quality/meaning gate + citation lock | patina, StealthHumanizer | ✅ **have** (semantic gate + preserve-lock) |
 | Back-translation / translation laundering | lynote, StealthHumanizer | ✅ **have** (`back_translate`, multi-pivot) |
 | **Word-importance-ranked synonym substitution** | HMGC, TextFooler, RAFT, StealthHumanizer | ✅ **JUST BUILT** — `attacks.surgical_substitute` (rank words by detector-score-drop → swap top-k synonyms that lower the score) |
@@ -57,7 +57,7 @@ ours.
 | **Tone / style / persona presets** | StealthHumanizer (13 tones), Aboudjem (5 voices) | P1 — trivial (rubric `--style` param) |
 | **0–100 AI-tell score** surfaced | Aboudjem | P2 — we have 0–1; expose ×100 |
 | **Browser extension (MV3)** inline in Gmail/Docs | StealthHumanizer, candidly, Ai-rewrite | P2 — high reach, more work |
-| **FastAPI HTTP service** | DadaNanjesha | P2 — wrap `humanize_text` |
+| **FastAPI HTTP service** | DadaNanjesha | P2 — wrap `untell_text` |
 | **Voice profile from user's own writing samples** | numen-tech, blader, writing-agent | P2 — strong quality differentiator |
 | **Multi-provider LLM routing** (Ollama/Groq/LM Studio) | StealthHumanizer (35) | P2 — extend rewriter providers |
 | **Telegram bot / Raycast / n8n / Docker / PWA** | various | P3 — channel breadth |

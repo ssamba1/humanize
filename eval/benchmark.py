@@ -1,4 +1,4 @@
-"""Run the humanize benchmark: compare noop / single_pass / full_loop on a dataset.
+"""Run the untell benchmark: compare noop / single_pass / full_loop on a dataset.
 
     python -m eval.benchmark --dataset builtin --n 5
     python -m eval.benchmark --dataset hc3 --n 100 --threshold 0.3

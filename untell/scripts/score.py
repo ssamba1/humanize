@@ -15,10 +15,10 @@ JSON the skill (Claude) reads as feedback:
 The ``max`` aggregation targets the hardest detector in the ensemble (report gap #3): a rewrite
 only "passes" when *every* detector is under threshold.
 
-CLI / console entry (`humanize-score`):
-    humanize-score "<text>"
-    humanize-score --file path.txt --tier full --threshold 0.3
-    echo "text" | humanize-score
+CLI / console entry (`untell-score`):
+    untell-score "<text>"
+    untell-score --file path.txt --tier full --threshold 0.3
+    echo "text" | untell-score
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ import argparse
 import json
 import sys
 
-from humanize.detectors.base import load_detectors, resolved_tier
+from untell.detectors.base import load_detectors, resolved_tier
 
 DEFAULT_THRESHOLD = 0.30
 
@@ -68,7 +68,7 @@ def _read_input(args: argparse.Namespace) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="humanize-score",
+        prog="untell-score",
         description="Score text with the local AI-detector ensemble and print JSON.",
     )
     parser.add_argument("text", nargs="?", help="Text to score (or use --file / stdin).")
@@ -89,7 +89,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    from humanize._env import load_env
+    from untell._env import load_env
 
     load_env()  # pick up commercial keys from a .env file if present (for --tier commercial)
 
@@ -100,7 +100,7 @@ def main(argv: list[str] | None = None) -> int:
 
     result = score_text(text, tier=args.tier, threshold=args.threshold)
     # Log which tier actually ran to stderr (stdout stays pure JSON for the skill to parse).
-    print(f"[humanize-score] tier requested={args.tier} ran={result['tier']}", file=sys.stderr)
+    print(f"[untell-score] tier requested={args.tier} ran={result['tier']}", file=sys.stderr)
     # ensure_ascii=True: detector error strings may carry non-ASCII; never crash a Windows stdout.
     print(json.dumps(result, ensure_ascii=True, indent=2))
     return 0

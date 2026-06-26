@@ -4,8 +4,8 @@ This is the literal "does it pass all major AI detectors" tool. It scores text w
 *configured* commercial detector (those whose API keys are set) and reports, per checker, the AI
 probability and whether it is under the pass threshold — plus an overall ``passes_all`` verdict.
 
-    humanize-verify "text to check" --threshold 0.30
-    humanize-verify --file out.txt --json
+    untell-verify "text to check" --threshold 0.30
+    untell-verify --file out.txt --json
 
 With no commercial keys set it reports that no checkers are configured (and exits non-zero), because
 "passes all major checkers" cannot be asserted without running against them.
@@ -17,9 +17,9 @@ import argparse
 import json
 import sys
 
-from humanize.detectors.base import clamp01
-from humanize.detectors.commercial import CopyleaksDetector, commercial_detectors
-from humanize.scripts.score import DEFAULT_THRESHOLD
+from untell.detectors.base import clamp01
+from untell.detectors.commercial import CopyleaksDetector, commercial_detectors
+from untell.scripts.score import DEFAULT_THRESHOLD
 
 
 def verify(
@@ -32,7 +32,7 @@ def verify(
 
     ``sandbox=True`` puts Copyleaks in free mock mode (pipeline test only — scores not meaningful).
     ``browser`` is a list of free-web-UI checker names (e.g. ``["zerogpt"]``) to drive via Playwright
-    (no API key, but slow/fragile — see humanize.browser_check).
+    (no API key, but slow/fragile — see untell.browser_check).
     """
     detectors = commercial_detectors()
     if sandbox:
@@ -51,7 +51,7 @@ def verify(
             results[d.name] = {"ai": None, "passes": False, "error": str(exc)[:160]}
 
     for site in browser or []:
-        from humanize.browser_check import get_browser_checker
+        from untell.browser_check import get_browser_checker
 
         key = f"{site}(web)"
         names.append(key)
@@ -108,10 +108,10 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
-    from humanize._env import load_env
+    from untell._env import load_env
 
     load_env()  # pick up keys from a .env file if present
-    parser = argparse.ArgumentParser(prog="humanize-verify", description="Verify text against commercial AI checkers.")
+    parser = argparse.ArgumentParser(prog="untell-verify", description="Verify text against commercial AI checkers.")
     parser.add_argument("text", nargs="?", help="text to verify (or --file / stdin)")
     parser.add_argument("--file", "-f", help="read text from this file")
     parser.add_argument("--threshold", "-t", type=float, default=DEFAULT_THRESHOLD)

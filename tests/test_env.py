@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 
-from humanize._env import load_env
+from untell._env import load_env
 
 
 def test_load_env_sets_vars_and_respects_existing(tmp_path, monkeypatch):

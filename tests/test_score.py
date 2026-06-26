@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from humanize.scripts.score import main, score_text
+from untell.scripts.score import main, score_text
 
 
 def test_score_text_shape_lite():

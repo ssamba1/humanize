@@ -6,7 +6,7 @@ If you find a security issue — a secret-handling bug, an injection in the brow
 unsafe-deserialization, a supply-chain concern, or anything that could harm a user running this tool —
 please report it **privately**:
 
-- Use GitHub's **[Report a vulnerability](https://github.com/ssamba1/humanize/security/advisories/new)**
+- Use GitHub's **[Report a vulnerability](https://github.com/ssamba1/untell/security/advisories/new)**
   (Security → Advisories), **or**
 - Open a minimal issue that says *"security — please contact me"* **without** the exploit details, and we'll
   move it to a private channel.

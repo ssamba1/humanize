@@ -14,8 +14,8 @@ option** (30 GPU-hrs/week, reliable); Colab is easiest but flakier.
 1. kaggle.com → Create → **Notebook** → Settings → **Accelerator: GPU T4 x2** (or P100). Internet: **On**.
 2. In a cell:
 ```python
-!git clone https://github.com/ssamba1/humanize.git    # private repo: use a token URL or upload a zip
-%cd humanize
+!git clone https://github.com/ssamba1/untell.git    # private repo: use a token URL or upload a zip
+%cd untell
 !pip install -q -e ".[train,full]"
 !python -m training.rl_humanizer --smoke               # free dry-run, proves it works (~minutes)
 # real train (3B fits a T4 with 4-bit):
@@ -32,7 +32,7 @@ option** (30 GPU-hrs/week, reliable); Colab is easiest but flakier.
   L4/A100 + longer runs if you want headroom.
 
 ## Notes
-- Private repo: pass a GitHub token in the clone URL (`https://TOKEN@github.com/ssamba1/humanize.git`),
+- Private repo: pass a GitHub token in the clone URL (`https://TOKEN@github.com/ssamba1/untell.git`),
   or upload the repo as a dataset/zip.
 - `--tier full` reward downloads the OSS detectors (RADAR/Binoculars optional) on first run; `--tier
   lite` is faster but a weaker reward. `--tier commercial` needs detector API keys set in the notebook.

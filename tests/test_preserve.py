@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 
-from humanize.scripts.preserve import lock, restore
-from humanize.scripts.preserve import main as preserve_main
+from untell.scripts.preserve import lock, restore
+from untell.scripts.preserve import main as preserve_main
 
 
 def test_cli_is_ascii_safe(capsys):

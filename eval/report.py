@@ -71,7 +71,7 @@ def render(by_strategy: dict[str, list], threshold: float) -> str:
     """`by_strategy`: {strategy_name: [LoopResult, ...]}. Returns a markdown report string."""
     s = summarize(by_strategy, threshold)
     lines: list[str] = []
-    lines.append("# humanize benchmark\n")
+    lines.append("# untell benchmark\n")
     lines.append(f"Threshold (max-proxy P(AI) for bypass): **{threshold}**\n")
     lines.append("| Strategy | n | mean pre max | mean post max | bypass rate | mean sim | mean iters |")
     lines.append("|---|---:|---:|---:|---:|---:|---:|")

@@ -14,13 +14,13 @@ Legend: ✅ shipped · 🔜 buildable now (no new hardware) · ⛔ needs a GPU.
 - ✅ **Multi-detector ensemble** — 7 local adapters (perplexity/burstiness, RoBERTa-OpenAI, HC3, MAGE,
   Fast-DetectGPT, RADAR, Binoculars) + 6 commercial API adapters + a free browser checker. The loop drives
   the **max** across all of them.
-- ✅ **Per-sentence targeting** (`humanize-sentences`) — rewrite only the sentences that read as AI.
+- ✅ **Per-sentence targeting** (`untell-sentences`) — rewrite only the sentences that read as AI.
 - ✅ **Semantic-similarity gate + preserve-lock** — refuses meaning-breaking rewrites; locks
   citations/numbers/quotes/URLs/entities.
-- ✅ **Honest verification** — `humanize-verify` / `humanize-prove`: per-detector pass/fail, exit 0 only when
+- ✅ **Honest verification** — `untell-verify` / `untell-prove`: per-detector pass/fail, exit 0 only when
   every configured checker passes.
 - ✅ **No-GPU evasion toolkit** — word-importance-ranked synonym substitution, homoglyph substitution,
-  hidden-watermark/zero-width scrubbing, back-translation (`humanize.attacks`).
+  hidden-watermark/zero-width scrubbing, back-translation (`untell.attacks`).
 - ✅ **Distribution** — Claude Code skill, pip CLIs, MCP server, `.docx`/`.pdf` input, style presets.
 
 ## Next — no new hardware

@@ -4,13 +4,13 @@ reward = (1 - max P(AI) across our detector ensemble) - meaning-drift penalty
 
 Pure-python over our own detectors + semantic similarity, so it is testable on the lite tier with no
 GPU. The RL trainer (rl_humanizer.py) calls this to score generated paraphrases; train against the
-``full`` tier (or ``commercial`` with keys) to learn a humanize-by-default policy.
+``full`` tier (or ``commercial`` with keys) to learn a untell-by-default policy.
 """
 
 import re
 
-from humanize.scripts.quality import similarity
-from humanize.scripts.score import score_text
+from untell.scripts.quality import similarity
+from untell.scripts.score import score_text
 
 _W = re.compile(r"[A-Za-z']+")
 

@@ -27,7 +27,7 @@ import os
 import re
 from dataclasses import dataclass, field
 
-from humanize.detectors.base import clamp01
+from untell.detectors.base import clamp01
 
 _PCT = re.compile(r"([\d.]+)\s*%")
 

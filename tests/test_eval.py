@@ -78,16 +78,16 @@ def test_builtin_repeats_to_satisfy_large_n():
 
 def test_api_loop_falls_back_to_scripted_without_rewriter(monkeypatch):
     # No SDK/key configured -> get_rewriter() is None -> scripted fallback, never crashes.
-    import humanize.rewriter
+    import untell.rewriter
 
-    monkeypatch.setattr(humanize.rewriter, "get_rewriter", lambda prefer=None: None)
+    monkeypatch.setattr(untell.rewriter, "get_rewriter", lambda prefer=None: None)
     res = api_loop(load_samples("builtin", 1)[0], tier="lite")
     assert res.post["max"] <= res.pre["max"] + 1e-9
     assert res.iterations >= 1
 
 
 def test_api_loop_uses_a_configured_rewriter(monkeypatch):
-    import humanize.rewriter
+    import untell.rewriter
 
     class _FakeRW:
         name = "fake"
@@ -99,7 +99,7 @@ def test_api_loop_uses_a_configured_rewriter(monkeypatch):
             # A bursty, human-ish rewrite that the lite detector should not flag.
             return "It broke. Twice. Nobody knew why until someone actually read the logs, finally."
 
-    monkeypatch.setattr(humanize.rewriter, "get_rewriter", lambda prefer=None: _FakeRW())
+    monkeypatch.setattr(untell.rewriter, "get_rewriter", lambda prefer=None: _FakeRW())
     src = "Furthermore, the formulaic system continues to operate predictably and uniformly throughout."
     res = api_loop(src, tier="lite")
     assert isinstance(res.text, str) and res.text
@@ -107,7 +107,7 @@ def test_api_loop_uses_a_configured_rewriter(monkeypatch):
 
 
 def test_api_loop_survives_rewriter_exception(monkeypatch):
-    import humanize.rewriter
+    import untell.rewriter
 
     class _BoomRW:
         name = "boom"
@@ -118,6 +118,6 @@ def test_api_loop_survives_rewriter_exception(monkeypatch):
         def rewrite(self, text, score_result, threshold=0.30):
             raise RuntimeError("api down")
 
-    monkeypatch.setattr(humanize.rewriter, "get_rewriter", lambda prefer=None: _BoomRW())
+    monkeypatch.setattr(untell.rewriter, "get_rewriter", lambda prefer=None: _BoomRW())
     res = api_loop(load_samples("builtin", 1)[0], tier="lite")  # must fall back, not raise
     assert res.iterations >= 1

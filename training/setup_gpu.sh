@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One-shot setup + train on a fresh GPU box (DigitalOcean GPU Droplet, Ubuntu, NVIDIA driver+CUDA).
 # Usage:  GITHUB_TOKEN=ghp_xxx bash setup_gpu.sh        (private repo)
-#    or:  REPO_URL=https://github.com/you/humanize.git bash setup_gpu.sh
+#    or:  REPO_URL=https://github.com/you/untell.git bash setup_gpu.sh
 set -euo pipefail
 
 # Model: Qwen2.5-3B fits >=24GB VRAM (RTX 6000 Ada / L40S / H100). On a 20GB RTX 4000 Ada, run with
@@ -21,13 +21,13 @@ sudo apt-get update -y && sudo apt-get install -y python3-venv git
 if [ -n "${REPO_URL:-}" ]; then
   URL="$REPO_URL"
 elif [ -n "${GITHUB_TOKEN:-}" ]; then
-  URL="https://${GITHUB_TOKEN}@github.com/ssamba1/humanize.git"
+  URL="https://${GITHUB_TOKEN}@github.com/ssamba1/untell.git"
 else
-  URL="https://github.com/ssamba1/humanize.git"
+  URL="https://github.com/ssamba1/untell.git"
 fi
 
-[ -d humanize ] || git clone "$URL" humanize
-cd humanize
+[ -d untell ] || git clone "$URL" untell
+cd untell
 
 python3 -m venv .venv
 # shellcheck disable=SC1091

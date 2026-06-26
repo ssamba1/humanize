@@ -1,11 +1,11 @@
-"""humanize-prove end-to-end tests — offline (rewriter + commercial HTTP mocked)."""
+"""untell-prove end-to-end tests — offline (rewriter + commercial HTTP mocked)."""
 
 from __future__ import annotations
 
 import pytest
 
 from eval.prove import main, prove
-from humanize.detectors import commercial as C
+from untell.detectors import commercial as C
 
 _ENV = [
     "ORIGINALITY_API_KEY",
@@ -31,13 +31,13 @@ def _clear(monkeypatch):
         monkeypatch.delenv(v, raising=False)
     C._CL_TOKEN["token"] = None
     C._CL_TOKEN["exp"] = 0.0
-    import humanize.scripts.run as run_mod
+    import untell.scripts.run as run_mod
 
     monkeypatch.setattr(run_mod, "get_rewriter", lambda prefer=None: _NoopRW())
 
 
 def test_prove_no_checkers_configured():
-    v = prove("some text to humanize and prove")
+    v = prove("some text to untell and prove")
     assert v["passes_all"] is False  # nothing to verify against
 
 

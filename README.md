@@ -1,22 +1,22 @@
 <div align="center">
 
-<a href="https://ssamba1.github.io/humanize/"><img src="docs/og.png" alt="humanize — the open-source AI humanizer that closes the loop: rewrites AI text against live detector scores while keeping meaning, citations and facts intact" width="820"></a>
+<a href="https://ssamba1.github.io/untell/"><img src="docs/og.png" alt="untell — the open-source AI humanizer that closes the loop: rewrites AI text against live detector scores while keeping meaning, citations and facts intact" width="820"></a>
 
-# humanize — the open-source AI humanizer that *closes the loop*
+# untell — the open-source AI humanizer that *closes the loop*
 
 ### Iteratively rewrite AI-generated text against live AI-detector scores until it reads human — while keeping your meaning, citations, and facts intact.
 
 A **closed-loop, detector-feedback** AI humanizer, shipped as a **Claude Code skill** *and* a Python CLI.
 Free. Open source. Honest about what it can and can't do.
 
-[![CI](https://github.com/ssamba1/humanize/actions/workflows/ci.yml/badge.svg)](https://github.com/ssamba1/humanize/actions/workflows/ci.yml)
+[![CI](https://github.com/ssamba1/untell/actions/workflows/ci.yml/badge.svg)](https://github.com/ssamba1/untell/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
 [![Claude Code skill](https://img.shields.io/badge/Claude%20Code-skill-8A2BE2.svg)](#-quick-start)
 [![Zero-dependency lite tier](https://img.shields.io/badge/install-zero--dependency-brightgreen.svg)](#tiers)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-orange.svg)](CONTRIBUTING.md)
-[![Live site](https://img.shields.io/badge/site-ssamba1.github.io%2Fhumanize-2ea44f.svg)](https://ssamba1.github.io/humanize/)
-[![good first issues](https://img.shields.io/github/issues/ssamba1/humanize/good%20first%20issue.svg?label=good%20first%20issues&color=7057ff)](https://github.com/ssamba1/humanize/labels/good%20first%20issue)
+[![Live site](https://img.shields.io/badge/site-ssamba1.github.io%2Funtell-2ea44f.svg)](https://ssamba1.github.io/untell/)
+[![good first issues](https://img.shields.io/github/issues/ssamba1/untell/good%20first%20issue.svg?label=good%20first%20issues&color=7057ff)](https://github.com/ssamba1/untell/labels/good%20first%20issue)
 
 **Beat GPTZero · ZeroGPT · Originality.ai · Turnitin · Copyleaks · Winston · Sapling** — by optimizing
 against them, not guessing. [Why this is the most complete open humanizer →](#-why-this-is-the-best-open-source-ai-humanizer)
@@ -44,42 +44,62 @@ preserves meaning) — and **no shipping tool, open or commercial, actually does
 
 ```bash
 # Zero dependencies. Works right now, in Claude Code:
-/humanize  <paste your AI-sounding text or a file path>
+/untell  <paste your AI-sounding text or a file path>
 ```
 
 ---
 
 ## ⚡ Quick start
 
-**As a Claude Code skill (recommended, zero install):**
+**Try it free, no install:** paste text into the **[in-browser AI detector](https://ssamba1.github.io/untell/demo.html)**
+for an instant AI-tell score (runs locally, nothing uploaded).
+
+**Install the Claude Code skill — one line:**
 
 ```bash
-git clone https://github.com/ssamba1/humanize
-cp -r humanize/humanize ~/.claude/skills/humanize   # copy the skill directory
+# macOS / Linux
+curl -fsSL https://raw.githubusercontent.com/ssamba1/untell/main/install.sh | sh
+# Windows PowerShell
+irm https://raw.githubusercontent.com/ssamba1/untell/main/install.ps1 | iex
 ```
 
-Then in Claude Code: `/humanize <your text or a file path>`. Claude is the rewriter; the bundled scripts
-score the text and lock your facts. Works with **zero dependencies** (the lite tier). For real detector
-signal, add the full tier (below).
+Then in Claude Code: **`/untell <your text or a file path>`**. Claude is the rewriter; the bundled scripts
+score the text and lock your facts. Zero dependencies (lite tier).
 
-**As a Python CLI:**
+**Or install as a Claude Code plugin** (marketplace):
+
+```text
+/plugin marketplace add ssamba1/untell
+/plugin install untell@untell
+```
+
+**As a Python package:**
 
 ```bash
-pip install -e ".[full]"              # real detector ensemble on CPU
-humanize-loop "Your AI-sounding paragraph here."        # rewrite until it passes
-humanize-score "text" --tier full --threshold 0.3       # just score it
-humanize-verify --file draft.txt                        # honest pass/fail per detector
+pip install "untell[full]"                       # real detector ensemble on CPU
+untell-loop "Your AI-sounding paragraph here."    # rewrite until it passes
+untell-score "text" --tier full --threshold 0.3   # just score it
+untell-verify --file draft.txt                    # honest pass/fail per detector
 ```
 
-**As an MCP server** (Claude Desktop & any MCP client): `pip install -e ".[mcp]"` then run `humanize-mcp` —
-exposes `score`, `sentences`, `humanize`, `verify`, and `scrub` as tools.
+<details>
+<summary>Manual / MCP install</summary>
+
+```bash
+# Manual skill copy:
+git clone https://github.com/ssamba1/untell && cp -r untell/untell ~/.claude/skills/untell
+
+# MCP server (Claude Desktop & any MCP client) — exposes score/sentences/untell/verify/scrub as tools:
+pip install "untell[mcp]" && untell-mcp
+```
+</details>
 
 ---
 
 ## How it works
 
 ```
-/humanize <text|file>
+/untell <text|file>
   preserve-lock citations / numbers / quotes / URLs / entities   (scripts/preserve.py)
   scrub hidden watermark / zero-width / homoglyph characters from the input
   repeat up to N times:
@@ -115,7 +135,7 @@ independent survey of the field concluded, verbatim:
 
 **This is the repo that has all four.** Here it is against the strongest open competitors:
 
-| Capability | **humanize (this repo)** | lynote (1.4k★) | patina (196★) | StealthHumanizer (58★) | harshaneel (51★) | Aboudjem (97★) | StealthRL (research) |
+| Capability | **untell (this repo)** | lynote (1.4k★) | patina (196★) | StealthHumanizer (58★) | harshaneel (51★) | Aboudjem (97★) | StealthRL (research) |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
 | Inference-time **detector-feedback loop** | ✅ | ❌ | ◑ own score | ◑ multi-pass | ◑ manual | ❌ | ◑ train-time |
 | **Real detectors** in the loop (not an internal score) | ✅ | ❌ | ❌ | ❌ | ◑ Binoculars only | ❌ | ✅ ensemble |
@@ -150,8 +170,8 @@ actually ran, so you always know how much to trust the number.
 | **commercial** | `pip install -e ".[commercial]"` + your keys | + Originality.ai, GPTZero, Winston, Sapling, ZeroGPT, Copyleaks | The real checkers. Key-gated; nothing runs or bills unless you set a key. |
 
 ```bash
-humanize-score "Your text here" --tier full --threshold 0.3
-echo "piped text" | humanize-score
+untell-score "Your text here" --tier full --threshold 0.3
+echo "piped text" | untell-score
 ```
 
 ---
@@ -167,12 +187,12 @@ pip install -e ".[commercial]"
 export GPTZERO_API_KEY=...      ORIGINALITY_API_KEY=...   WINSTON_API_KEY=...
 export SAPLING_API_KEY=...      ZEROGPT_API_KEY=...       COPYLEAKS_EMAIL=...  COPYLEAKS_API_KEY=...
 
-humanize-loop  "text" --tier commercial      # rewrite until EVERY configured checker passes
-humanize-verify "text" --threshold 0.30      # pass/fail per checker + overall verdict (exit 0 = all pass)
-humanize-prove "Your AI text" --margin 0.10  # verify → loop → re-verify: one before/after table
+untell-loop  "text" --tier commercial      # rewrite until EVERY configured checker passes
+untell-verify "text" --threshold 0.30      # pass/fail per checker + overall verdict (exit 0 = all pass)
+untell-prove "Your AI text" --margin 0.10  # verify → loop → re-verify: one before/after table
 ```
 
-`humanize-verify` exits `0` only when **every** configured checker scores under the threshold. `humanize-prove`
+`untell-verify` exits `0` only when **every** configured checker scores under the threshold. `untell-prove`
 runs the whole thing end-to-end so you get an honest before/after AI% per checker. (Each `--tier commercial`
 iteration calls every checker, so it **costs API credits** — cap with `--max-iters`.)
 
@@ -180,8 +200,8 @@ iteration calls every checker, so it **costs API credits** — cap with `--max-i
 
 ```bash
 pip install -e ".[browser]" && playwright install chromium
-humanize-verify --browser zerogpt "text"     # drives the free ZeroGPT web UI — no API key, $0
-humanize-loop   "text" --browser zerogpt      # iterate against the LIVE ZeroGPT detector until it clears
+untell-verify --browser zerogpt "text"     # drives the free ZeroGPT web UI — no API key, $0
+untell-loop   "text" --browser zerogpt      # iterate against the LIVE ZeroGPT detector until it clears
 ```
 
 The `--browser` path drives a real headless browser through a free web checker and reads the % score.
@@ -267,7 +287,7 @@ For broader cross-detector benchmarking, [IMGTB](https://github.com/kinit-sk/IMG
 ## Repo layout
 
 ```
-humanize/            # THE SKILL (this dir is what you install)
+untell/            # THE SKILL (this dir is what you install)
   SKILL.md           # trigger + loop procedure + rewrite rubric
   scripts/           # score · preserve · quality · sentences · run · verify
   detectors/         # base protocol + tiered adapters (7 local + 6 commercial)
@@ -307,7 +327,7 @@ runs the torch-gated tests. See **[CONTRIBUTING.md](CONTRIBUTING.md)** to get in
 ## Contributing
 
 PRs, detector adapters, and new free-checker selectors are welcome — see
-**[CONTRIBUTING.md](CONTRIBUTING.md)**, the **[good first issues](https://github.com/ssamba1/humanize/issues)**,
+**[CONTRIBUTING.md](CONTRIBUTING.md)**, the **[good first issues](https://github.com/ssamba1/untell/issues)**,
 and our **[Code of Conduct](CODE_OF_CONDUCT.md)**. Found a security issue? See **[SECURITY.md](SECURITY.md)**.
 
 If this saved you from a false AI flag — or you just think it's the most honest humanizer on GitHub —

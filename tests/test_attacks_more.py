@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from humanize.attacks import (
+from untell.attacks import (
     count_hidden,
     homoglyph_substitute,
     importance,

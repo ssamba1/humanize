@@ -21,12 +21,12 @@ _PROMPT = "Rewrite the following text so it reads as natural human writing while
 def distill(dataset: str = "builtin", n: int = 200, tier: str = "full", threshold: float = 0.30, margin: float = 0.05):
     """Run the loop on ``n`` samples; yield SFT rows for the ones that passed (kept the meaning)."""
     from eval.datasets import load_samples
-    from humanize.scripts.run import humanize_text
+    from untell.scripts.run import untell_text
 
     rows = []
     kept = 0
     for src in load_samples(dataset, n):
-        result = humanize_text(src, tier=tier, threshold=threshold, margin=margin)
+        result = untell_text(src, tier=tier, threshold=threshold, margin=margin)
         if "error" in result:
             continue
         if not result.get("flagged") and result.get("similarity", 0.0) >= 0.76:

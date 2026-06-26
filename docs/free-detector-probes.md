@@ -1,6 +1,6 @@
 # Free AI-detector web-UI probe log
 
-Live Playwright probes of free web detectors for the `--browser` checker (`humanize/browser_check.py`).
+Live Playwright probes of free web detectors for the `--browser` checker (`untell/browser_check.py`).
 Goal: find sites that (a) take pasted text without login/captcha, (b) return a parseable % with a
 **stable** selector, and (c) are an actual detector. Dated 2026-06-25.
 

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ssamba1.github.io/humanize/sitemap.xml
+Sitemap: https://ssamba1.github.io/untell/sitemap.xml

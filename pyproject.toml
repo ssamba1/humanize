@@ -3,14 +3,14 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "humanize-skill"
+name = "untell"
 version = "0.1.0"
 description = "Closed-loop, detector-feedback AI-text humanizer packaged as a Claude skill (research prototype + eval harness)."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
-authors = [{ name = "humanize contributors" }]
-keywords = ["ai-detection", "humanizer", "claude-skill", "nlp", "research"]
+authors = [{ name = "untell contributors" }]
+keywords = ["untell", "ai-humanizer", "humanize-ai", "ai-detection", "gptzero", "turnitin", "claude-skill", "nlp"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -34,7 +34,7 @@ full = [
 # Strongest proxy (Binoculars = 2x Falcon-7B). GPU recommended.
 # Includes `full` so torch/transformers are present — Binoculars needs them to run at all.
 heavy = [
-    "humanize-skill[full]",
+    "untell[full]",
     "bitsandbytes>=0.43",
     "accelerate>=0.30",
 ]
@@ -60,7 +60,7 @@ docs = [
     "python-docx>=1.1",
     "pypdf>=4.0",
 ]
-# MCP server (exposes humanize/score/verify as tools to Claude Desktop & other MCP clients)
+# MCP server (exposes untell/score/verify as tools to Claude Desktop & other MCP clients)
 mcp = [
     "mcp>=1.0",
 ]
@@ -80,31 +80,31 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ssamba1/humanize"
-Repository = "https://github.com/ssamba1/humanize"
+Homepage = "https://github.com/ssamba1/untell"
+Repository = "https://github.com/ssamba1/untell"
 
 [project.scripts]
-humanize-score = "humanize.scripts.score:main"
-humanize-loop = "humanize.scripts.run:main"
-humanize-verify = "humanize.scripts.verify:main"
-humanize-prove = "eval.prove:main"
-humanize-sentences = "humanize.scripts.sentences:main"
-humanize-mcp = "humanize.mcp_server:main"
-humanize-distill = "training.distill:main"
+untell-score = "untell.scripts.score:main"
+untell-loop = "untell.scripts.run:main"
+untell-verify = "untell.scripts.verify:main"
+untell-prove = "eval.prove:main"
+untell-sentences = "untell.scripts.sentences:main"
+untell-mcp = "untell.mcp_server:main"
+untell-distill = "training.distill:main"
 
 [tool.setuptools]
 packages = [
-    "humanize",
-    "humanize.scripts",
-    "humanize.detectors",
-    "humanize.rewriter",
-    "humanize.attacks",
+    "untell",
+    "untell.scripts",
+    "untell.detectors",
+    "untell.rewriter",
+    "untell.attacks",
     "eval",
     "training",
 ]
 
 [tool.setuptools.package-data]
-humanize = ["SKILL.md", "references/*.md"]
+untell = ["SKILL.md", "references/*.md"]
 
 [tool.ruff]
 line-length = 100

@@ -58,7 +58,7 @@ jobs:
       - name: Sanity — torch + detectors import and score
         run: |
           python - <<'PY'
-          from humanize.detectors.base import load_detectors, resolved_tier
+          from untell.detectors.base import load_detectors, resolved_tier
           dets = load_detectors("full")
           tier = resolved_tier(dets)
           names = sorted(d.name for d in dets)

@@ -10,7 +10,7 @@ body:
     attributes:
       label: What happened?
       description: What did you run, what did you expect, what did you get?
-      placeholder: "I ran `humanize-loop ...` and ..."
+      placeholder: "I ran `untell-loop ...` and ..."
     validations:
       required: true
   - type: dropdown
@@ -23,7 +23,7 @@ body:
         - heavy / RADAR / Binoculars
         - commercial (API keys)
         - browser (Playwright)
-        - "as a Claude Code skill (/humanize)"
+        - "as a Claude Code skill (/untell)"
     validations:
       required: true
   - type: textarea
@@ -38,6 +38,6 @@ body:
     id: env
     attributes:
       label: Environment
-      placeholder: "OS, Python version, output of `humanize-score --version` if relevant"
+      placeholder: "OS, Python version, output of `untell-score --version` if relevant"
     validations:
       required: false

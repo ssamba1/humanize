@@ -25,7 +25,7 @@ have credits — pick the smallest GPU and **destroy the droplet right after tra
 ## 2. One-shot setup + train
 ```bash
 # on the droplet:
-curl -fsSL https://raw.githubusercontent.com/ssamba1/humanize/main/training/setup_gpu.sh -o setup_gpu.sh
+curl -fsSL https://raw.githubusercontent.com/ssamba1/untell/main/training/setup_gpu.sh -o setup_gpu.sh
 # repo is PRIVATE -> either make it public briefly, or pass a GitHub token:
 GITHUB_TOKEN=ghp_xxx bash setup_gpu.sh
 ```
@@ -39,7 +39,7 @@ for the clone then private again.
 ## 3. Pull the result back + destroy
 ```bash
 # from your machine:
-scp -r root@<droplet-ip>:~/humanize/out/rl-humanizer ./out/
+scp -r root@<droplet-ip>:~/untell/out/rl-humanizer ./out/
 ```
 Then **destroy the droplet** in the DO console (stops billing). The adapter in `out/rl-humanizer` is
 your trained policy — use it as the rewriter backend (runs on CPU for inference).

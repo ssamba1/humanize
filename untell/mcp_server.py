@@ -1,7 +1,7 @@
 """MCP server — expose the humanizer as tools to Claude Desktop and other MCP clients.
 
-Run: ``humanize-mcp`` (after ``pip install -e ".[mcp]"``). Register it in your MCP client's config.
-Tools: ``score`` (AI-likelihood + per-detector), ``sentences`` (per-sentence flags), ``humanize``
+Run: ``untell-mcp`` (after ``pip install -e ".[mcp]"``). Register it in your MCP client's config.
+Tools: ``score`` (AI-likelihood + per-detector), ``sentences`` (per-sentence flags), ``untell``
 (run the loop), ``verify`` (pass/fail vs commercial checkers), ``scrub`` (strip hidden watermarks).
 
 The ``mcp`` package is imported lazily so this module imports fine without it (the server build needs
@@ -14,13 +14,13 @@ from __future__ import annotations
 def _server():
     from mcp.server.fastmcp import FastMCP
 
-    from humanize.attacks import count_hidden, scrub_hidden
-    from humanize.scripts.run import humanize_text
-    from humanize.scripts.score import score_text
-    from humanize.scripts.sentences import score_sentences
-    from humanize.scripts.verify import verify
+    from untell.attacks import count_hidden, scrub_hidden
+    from untell.scripts.run import untell_text
+    from untell.scripts.score import score_text
+    from untell.scripts.sentences import score_sentences
+    from untell.scripts.verify import verify
 
-    server = FastMCP("humanize")
+    server = FastMCP("untell")
 
     @server.tool()
     def score(text: str, tier: str = "lite") -> dict:
@@ -33,9 +33,9 @@ def _server():
         return score_sentences(text, tier=tier)
 
     @server.tool()
-    def humanize(text: str, tier: str = "lite", style: str | None = None, max_iters: int = 5) -> dict:
-        """Run the closed humanize loop (needs an LLM rewriter key, or use the /humanize skill)."""
-        return humanize_text(text, tier=tier, style=style, max_iters=max_iters)
+    def untell(text: str, tier: str = "lite", style: str | None = None, max_iters: int = 5) -> dict:
+        """Run the closed untell loop (needs an LLM rewriter key, or use the /untell skill)."""
+        return untell_text(text, tier=tier, style=style, max_iters=max_iters)
 
     @server.tool()
     def verify_commercial(text: str, threshold: float = 0.30) -> dict:

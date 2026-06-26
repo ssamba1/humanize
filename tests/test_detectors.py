@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from humanize.detectors.base import clamp01, load_detectors, resolved_tier
-from humanize.detectors.perplexity_burstiness import PerplexityBurstinessDetector, lite_score
+from untell.detectors.base import clamp01, load_detectors, resolved_tier
+from untell.detectors.perplexity_burstiness import PerplexityBurstinessDetector, lite_score
 
 AI_TEXT = (
     "Artificial intelligence has fundamentally transformed numerous industries. Moreover, it has "
@@ -57,7 +57,7 @@ def test_clamp01():
 
 
 def test_new_detectors_registered():
-    from humanize.detectors.base import all_detectors
+    from untell.detectors.base import all_detectors
 
     names = {d.name for d in all_detectors()}
     assert "hc3_roberta" in names
@@ -66,7 +66,7 @@ def test_new_detectors_registered():
 
 def test_radar_is_opt_in_gated(monkeypatch):
     # RADAR is non-commercial licensed -> excluded unless HUMANIZE_ENABLE_RADAR is set, even with torch.
-    from humanize.detectors.radar import RadarDetector
+    from untell.detectors.radar import RadarDetector
 
     monkeypatch.delenv("HUMANIZE_ENABLE_RADAR", raising=False)
     assert RadarDetector().available() is False

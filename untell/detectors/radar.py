@@ -56,7 +56,7 @@ class RadarDetector:
             import sys
 
             print(
-                "[humanize] RADAR enabled — TrustSafeAI/RADAR-Vicuna-7B is NON-COMMERCIAL licensed; "
+                "[untell] RADAR enabled — TrustSafeAI/RADAR-Vicuna-7B is NON-COMMERCIAL licensed; "
                 "research/evaluation use only.",
                 file=sys.stderr,
             )

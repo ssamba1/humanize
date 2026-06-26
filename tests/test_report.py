@@ -26,7 +26,7 @@ def test_summarize_shape():
 def test_render_is_ascii_safe_and_complete():
     md = render(_by(), 0.30)
     md.encode("ascii")  # no emoji -> never crashes a Windows cp1252 console
-    assert "# humanize benchmark" in md
+    assert "# untell benchmark" in md
     assert "Per-detector" in md
     assert "Thesis" in md
 

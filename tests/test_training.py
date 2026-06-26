@@ -20,10 +20,10 @@ def test_reward_penalizes_degenerate_and_meaning_drift():
 
 
 def test_distill_keeps_passing_samples(monkeypatch):
-    import humanize.scripts.run as run_mod
+    import untell.scripts.run as run_mod
 
     monkeypatch.setattr(
-        run_mod, "humanize_text", lambda text, **k: {"final": "a human rewrite", "flagged": False, "similarity": 0.9}
+        run_mod, "untell_text", lambda text, **k: {"final": "a human rewrite", "flagged": False, "similarity": 0.9}
     )
     out = distill("builtin", n=3, tier="lite")
     assert out["kept"] == 3
@@ -32,12 +32,12 @@ def test_distill_keeps_passing_samples(monkeypatch):
 
 
 def test_distill_drops_flagged_or_low_similarity(monkeypatch):
-    import humanize.scripts.run as run_mod
+    import untell.scripts.run as run_mod
 
-    monkeypatch.setattr(run_mod, "humanize_text", lambda text, **k: {"final": "x", "flagged": True, "similarity": 0.9})
+    monkeypatch.setattr(run_mod, "untell_text", lambda text, **k: {"final": "x", "flagged": True, "similarity": 0.9})
     assert distill("builtin", n=3, tier="lite")["kept"] == 0
 
-    monkeypatch.setattr(run_mod, "humanize_text", lambda text, **k: {"final": "x", "flagged": False, "similarity": 0.2})
+    monkeypatch.setattr(run_mod, "untell_text", lambda text, **k: {"final": "x", "flagged": False, "similarity": 0.2})
     assert distill("builtin", n=3, tier="lite")["kept"] == 0
 
 

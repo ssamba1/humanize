@@ -1,0 +1,5 @@
+# Shell scripts must stay LF so `curl | sh` works on macOS/Linux.
+*.sh text eol=lf
+install.sh text eol=lf
+# PowerShell is fine either way; keep CRLF on Windows.
+*.ps1 text eol=crlf

@@ -6,7 +6,7 @@ import builtins
 
 import pytest
 
-from humanize.browser_check import (
+from untell.browser_check import (
     WebUIChecker,
     ZeroGPTChecker,
     available_browser_checkers,

@@ -1,4 +1,4 @@
-"""StealthRL-style GRPO + LoRA training of a humanize-by-default rewriter (THE GPU MOAT).
+"""StealthRL-style GRPO + LoRA training of a untell-by-default rewriter (THE GPU MOAT).
 
 ⚠️ RUN ON GPU ONLY. Not run in CI. This is the scaffold for the one capability no other open repo
 combines with the rest of our stack: a small instruct model RL-trained so its paraphrases evade our
@@ -10,7 +10,7 @@ Setup:
     python -m training.rl_humanizer --model Qwen/Qwen2.5-3B-Instruct --tier full --steps 500
 
 Design: GRPO samples K paraphrases per source; the reward (training.reward.humanness_reward) =
-(1 - max P(AI) across the ensemble) - meaning-drift penalty. The policy learns to humanize. Train
+(1 - max P(AI) across the ensemble) - meaning-drift penalty. The policy learns to untell. Train
 against ``--tier full`` (free OSS detectors incl. RADAR) or ``--tier commercial`` (real APIs, AuthorMist
 style — costs credits) for the strongest, transfer-robust policy.
 """
@@ -28,7 +28,7 @@ _PROMPT = "Rewrite the following text so it reads as natural human writing while
 
 
 def build_dataset(name: str = "builtin", n: int = 2000):
-    """Build {prompt, source} rows from AI-text samples to humanize (RAID/MAGE/HC3 via eval.datasets)."""
+    """Build {prompt, source} rows from AI-text samples to untell (RAID/MAGE/HC3 via eval.datasets)."""
     from eval.datasets import load_samples
 
     samples = load_samples(name, n)

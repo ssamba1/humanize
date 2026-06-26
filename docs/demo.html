@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free AI Detector — instant AI-tell score (untell) | runs in your browser, no signup</title>
+<meta name="description" content="Free, no-signup AI content detector. Paste text and get an instant AI-tell score in your browser — nothing is uploaded. The same perplexity + burstiness heuristic untell's loop uses, honest about being a weak proxy. Then humanize it with the untell skill.">
+<meta name="keywords" content="free ai detector, ai content detector, ai text detector, check ai text, perplexity, burstiness, untell, ai humanizer">
+<link rel="canonical" href="https://ssamba1.github.io/untell/demo.html">
+<meta name="theme-color" content="#0d1117">
+<meta property="og:title" content="Free AI Detector — instant AI-tell score (untell)">
+<meta property="og:description" content="Paste text, get an instant AI-tell score in your browser. No signup, nothing uploaded.">
+<meta property="og:url" content="https://ssamba1.github.io/untell/demo.html">
+<meta property="og:image" content="https://ssamba1.github.io/untell/og.png">
+<style>
+  :root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--white:#e6edf3;--gray:#8b949e;--accent:#aa6eff;--green:#3fb950;--amber:#d29922;--red:#f85149}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--white);font:17px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 24px 64px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  h1{font-size:32px;margin:8px 0 6px}
+  .lede{color:var(--gray);margin:0 0 22px}
+  textarea{width:100%;min-height:200px;background:var(--panel);color:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;font:15px/1.6 inherit;resize:vertical}
+  .row{display:flex;gap:12px;align-items:center;margin:14px 0}
+  button{background:var(--accent);color:#fff;font-weight:700;border:0;border-radius:10px;padding:12px 22px;font-size:16px;cursor:pointer}
+  button.ghost{background:transparent;border:1px solid var(--border);color:var(--white)}
+  .count{color:var(--gray);font-size:14px;margin-left:auto}
+  .result{display:none;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px;margin-top:18px}
+  .result.show{display:block}
+  .score{font-size:54px;font-weight:800;line-height:1}
+  .verdict{font-size:18px;font-weight:600;margin-top:4px}
+  .bar{height:12px;border-radius:6px;background:#21262d;overflow:hidden;margin:16px 0}
+  .bar>span{display:block;height:100%;border-radius:6px;transition:width .4s}
+  .sub{display:flex;gap:20px;color:var(--gray);font-size:14px;margin-top:10px;flex-wrap:wrap}
+  .note{color:var(--gray);font-size:13px;margin-top:16px;border-top:1px solid var(--border);padding-top:14px}
+  .cta{display:inline-block;background:var(--accent);color:#fff;font-weight:700;padding:11px 22px;border-radius:10px;margin-top:14px}
+  header nav{font-size:14px;color:var(--gray);margin-bottom:18px}
+  code{font-family:Consolas,monospace;background:var(--panel);padding:2px 6px;border-radius:5px;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <nav><a href="./">untell</a> &nbsp;/&nbsp; Free AI detector</nav>
+    <h1>Free AI-detector — instant AI-tell score</h1>
+    <p class="lede">Paste text, get an AI-tell score <strong>instantly, in your browser</strong>. Nothing is uploaded — this runs the exact lite perplexity + burstiness heuristic that <a href="https://github.com/ssamba1/untell">untell</a>'s loop uses. It's an <em>honest weak proxy</em>, not a commercial detector — high score = reads machine-like, worth humanizing.</p>
+  </header>
+
+  <textarea id="t" placeholder="Paste AI-generated (or any) text here…"></textarea>
+  <div class="row">
+    <button onclick="run()">Score it</button>
+    <button class="ghost" onclick="sample()">Try a sample</button>
+    <span class="count" id="c">0 words</span>
+  </div>
+
+  <div class="result" id="r">
+    <div class="score" id="pct">—</div>
+    <div class="verdict" id="v"></div>
+    <div class="bar"><span id="b"></span></div>
+    <div class="sub">
+      <span>Burstiness (sentence-length variation): <b id="bu">—</b></span>
+      <span>Common-word ratio: <b id="cw">—</b></span>
+    </div>
+    <div class="note" id="hint"></div>
+    <a class="cta" href="https://github.com/ssamba1/untell#-quick-start">Reads AI? Humanize it with untell →</a>
+  </div>
+
+  <p class="note">This is the zero-dependency <code>lite</code> tier — a deliberately weak demo signal. The real ensemble (RoBERTa, MAGE, Fast-DetectGPT, RADAR, Binoculars + commercial APIs) runs in the installed tool. No tool, including this one, is a ground-truth detector; detectors are noisy and falsely flag non-native English writers at high rates. Use as a signal, not a verdict.</p>
+</div>
+
+<script>
+const COMMON = new Set(["the","be","to","of","and","a","in","that","have","i","it","for","not","on","with","he","as","you","do","at","this","but","his","by","from","they","we","say","her","she","or","an","will","my","one","all","would","there","their","what","so","up","out","if","about","who","get","which","go","me","when","make","can","like","time","no","just","him","know","take","people","into","year","your","good","some","could","them","see","other","than","then","now","look","only","come","its","over","think","also","back","after","use","two","how","our","work","first","well","way","even","new","want","because","any","these","give","day","most","us","is","are","was","were","been","has","had","more","very","such","additionally","moreover","furthermore","however","therefore","thus","overall"]);
+const clamp01 = x => Math.max(0, Math.min(1, x));
+const words = s => (s.match(/[A-Za-z']+/g) || []);
+const sentences = s => s.split(/[.!?]+(?:\s+|$)/).map(x=>x.trim()).filter(Boolean);
+function burstiness(sents){
+  let lens = sents.map(s=>words(s).length).filter(n=>n>0);
+  if(lens.length < 2) return 0;
+  let mean = lens.reduce((a,b)=>a+b,0)/lens.length;
+  if(mean === 0) return 0;
+  let v = lens.reduce((a,n)=>a+(n-mean)**2,0)/lens.length;
+  return Math.sqrt(v)/mean;
+}
+function commonRatio(text){
+  let ws = words(text).map(w=>w.toLowerCase());
+  if(!ws.length) return 0;
+  return ws.filter(w=>COMMON.has(w)).length/ws.length;
+}
+function liteScore(text){
+  if(!text.trim()) return {p:0.5,b:0,c:0};
+  let s = sentences(text), b = burstiness(s), c = commonRatio(text);
+  let bs = clamp01((0.55-b)/0.55), cs = clamp01((c-0.30)/0.30);
+  return {p: clamp01(0.6*bs+0.4*cs), b, c};
+}
+const t = document.getElementById('t');
+t.addEventListener('input', ()=>{ document.getElementById('c').textContent = words(t.value).length + ' words'; });
+function run(){
+  const {p,b,c} = liteScore(t.value);
+  const pct = Math.round(p*100);
+  document.getElementById('r').classList.add('show');
+  document.getElementById('pct').textContent = pct + '% AI';
+  const col = pct>=66 ? 'var(--red)' : pct>=33 ? 'var(--amber)' : 'var(--green)';
+  document.getElementById('pct').style.color = col;
+  const bar = document.getElementById('b');
+  bar.style.width = pct + '%'; bar.style.background = col;
+  document.getElementById('v').textContent = pct>=66 ? 'Reads machine-like — worth humanizing.' : pct>=33 ? 'Mixed signal.' : 'Reads fairly human (on this weak proxy).';
+  document.getElementById('bu').textContent = b.toFixed(2) + (b<0.25 ? ' (uniform → AI-like)' : '');
+  document.getElementById('cw').textContent = (c*100).toFixed(0) + '%' + (c>0.45 ? ' (formulaic)' : '');
+  document.getElementById('hint').textContent = pct>=33
+    ? 'To lower this: vary sentence length (mix short + long), cut formulaic transitions ("Moreover", "Overall"), and use less predictable word choices — exactly what untell\'s loop automates.'
+    : 'Low AI-tell on the lite proxy — but commercial detectors are stronger. Verify with the full tier before trusting it.';
+}
+function sample(){
+  t.value = "Furthermore, it is important to note that artificial intelligence has revolutionized many industries. Additionally, the technology continues to evolve rapidly. Moreover, businesses are increasingly adopting these solutions. Overall, the impact of AI on society is significant and far-reaching.";
+  t.dispatchEvent(new Event('input')); run();
+}
+</script>
+</body>
+</html>

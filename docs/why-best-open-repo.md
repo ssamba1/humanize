@@ -20,9 +20,9 @@ The independent survey of the open-source humanizer field concluded, verbatim:
 | Gap criterion | This repo |
 |---|---|
 | (a) validated vs **multiple live detectors** | 8 local (incl. RADAR, Binoculars, Fast-DetectGPT, MAGE, HC3) + **6 commercial API adapters** + browser checkers; **live-proven 100%→0% on ZeroGPT** |
-| (b) quality/meaning **verifier** | semantic-similarity gate + preserve-lock (citations/numbers/entities) + `humanize-verify` |
+| (b) quality/meaning **verifier** | semantic-similarity gate + preserve-lock (citations/numbers/entities) + `untell-verify` |
 | (c) **iterative detector-feedback loop at inference** | the core loop + **per-sentence targeting** (rewrite only the flagged sentences) |
-| (d) **user-installable package** | `pip install` + 5 console scripts (`humanize-score/loop/verify/prove/sentences`) **and** a Claude skill |
+| (d) **user-installable package** | `pip install` + 5 console scripts (`untell-score/loop/verify/prove/sentences`) **and** a Claude skill |
 
 ---
 
@@ -56,7 +56,7 @@ close the loop against real detectors with a verifier and an install.
   **GPU training framework, not a usable tool**: no inference package, no commercial-detector
   validation, no verifier for end users, no CI, needs serious GPU. We are the **usable, complete,
   installable** system; it is the **strongest attack model**. (We roadmap exactly its approach as our
-  GPU moat — see `best-humanizer-roadmap.md`.)
+  GPU moat — see `ROADMAP.md`.)
 - **patina** (196★) — best-designed *consumer* tool: pattern analysis + LLM rewrite + meaning-rollback
   + CI. But its AI score is its **own heuristic** — no validation against real detectors, no
   commercial/live integration. We add the real-detector ensemble, commercial adapters, and live proof.

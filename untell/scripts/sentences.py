@@ -5,7 +5,7 @@ re-rolling the whole paragraph (demonstrated live: ZeroGPT flagged an aphoristic
 just those took a stuck 35% to 0%). This module scores each sentence and returns the flagged ones, which
 the rewriter then targets.
 
-    humanize-sentences "Your paragraph here." --tier lite
+    untell-sentences "Your paragraph here." --tier lite
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ import json
 import re
 import sys
 
-from humanize.scripts.score import DEFAULT_THRESHOLD, score_text
+from untell.scripts.score import DEFAULT_THRESHOLD, score_text
 
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
 
@@ -43,7 +43,7 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
-    parser = argparse.ArgumentParser(prog="humanize-sentences", description="Per-sentence AI scoring.")
+    parser = argparse.ArgumentParser(prog="untell-sentences", description="Per-sentence AI scoring.")
     parser.add_argument("text", nargs="?")
     parser.add_argument("--file", "-f")
     parser.add_argument("--tier", default="lite", choices=["lite", "full", "heavy", "commercial"])

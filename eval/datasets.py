@@ -1,6 +1,6 @@
 """Dataset loading for the benchmark.
 
-Pulls AI-generated samples to humanize. Uses HuggingFace ``datasets`` when the ``[eval]`` extra
+Pulls AI-generated samples to untell. Uses HuggingFace ``datasets`` when the ``[eval]`` extra
 is installed; otherwise falls back to a small built-in bootstrap sample so the harness still
 runs (and tests pass) with zero downloads.
 
@@ -106,7 +106,7 @@ def load_samples(dataset: str = "builtin", n: int = 5) -> list[str]:
             texts = []
             for row in ds:
                 txt = row.get("text")
-                # MAGE label convention: 0 == machine-generated (the samples we want to humanize).
+                # MAGE label convention: 0 == machine-generated (the samples we want to untell).
                 if txt and row.get("label", 1) == 0 and len(txt.split()) > 30:
                     texts.append(txt.strip())
                 if len(texts) >= n:
@@ -117,5 +117,5 @@ def load_samples(dataset: str = "builtin", n: int = 5) -> list[str]:
 
     import sys
 
-    print(f"[humanize-eval] unknown dataset '{dataset}'; using builtin samples.", file=sys.stderr)
+    print(f"[untell-eval] unknown dataset '{dataset}'; using builtin samples.", file=sys.stderr)
     return _builtin(n)

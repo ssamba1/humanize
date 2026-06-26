@@ -143,7 +143,7 @@ class PerplexityBurstinessDetector:
                 import sys
 
                 print(
-                    f"[humanize] perplexity_burstiness full path failed ({type(exc).__name__}: "
+                    f"[untell] perplexity_burstiness full path failed ({type(exc).__name__}: "
                     f"{str(exc)[:120]}); falling back to lite heuristic.",
                     file=sys.stderr,
                 )

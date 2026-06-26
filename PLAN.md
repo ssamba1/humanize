@@ -1,17 +1,17 @@
-# Plan: `humanize` — a public Claude skill (research prototype + eval harness)
+# Plan: `untell` — a public Claude skill (research prototype + eval harness)
 
 ## Context
 
 Verified deep research (`humanizer-research-report.md`) shows the strongest **training-free** evasion technique is a **closed-loop detector-feedback rewrite** (arXiv 2506.07001: −88% TPR@1%FPR, transfers across detectors, quality preserved) — and no shipping humanizer does it; they do blind single-pass paraphrasing (60–80% plateau).
 
-**Goal (locked):** ship this loop as a **publicly distributable Claude skill** — any Claude Code user installs it and runs `/humanize`. Python research prototype + eval harness underneath. No GPU training, no commercial detector keys, no web UI. Greenfield repo at `C:\Users\Admin\Humanize` (git initialized).
+**Goal (locked):** ship this loop as a **publicly distributable Claude skill** — any Claude Code user installs it and runs `/untell`. Python research prototype + eval harness underneath. No GPU training, no commercial detector keys, no web UI. Greenfield repo at `C:\Users\Admin\Untell` (git initialized).
 
 **Key reframe — Claude *is* the rewriter.** The skill runner (Claude) performs the rewrites; the loop is orchestrated by `SKILL.md`. No external LLM API key needed → lowest install friction. Detectors are local lightweight scripts that score text; Claude reads scores and re-rewrites until the ensemble is under threshold while semantic similarity holds.
 
 ## How it works (the loop, driven by SKILL.md)
 
 ```
-/humanize <text|file>
+/untell <text|file>
   Claude: preserve-lock citations/entities/numbers/quotes (scripts/preserve.py)
   repeat up to N iters:
     score = scripts/score.py <text>     # ensemble of local detectors → {detector: P(AI)}, max
@@ -26,8 +26,8 @@ Targets the **max** proxy (multi-detector evasion, report gap #3). Quality gate 
 
 ## Distribution as a Claude skill
 
-- `humanize/SKILL.md` — frontmatter `name: humanize`, `description:` tuned to trigger on "humanize text / bypass AI detector / make this sound human / reduce AI detection". Body = the loop procedure above, with explicit stop conditions and the feedback-rewrite rubric.
-- Installable two ways: (a) copy `humanize/` into `~/.claude/skills/`; (b) as a plugin dir. README documents both.
+- `untell/SKILL.md` — frontmatter `name: untell`, `description:` tuned to trigger on "untell text / bypass AI detector / make this sound human / reduce AI detection". Body = the loop procedure above, with explicit stop conditions and the feedback-rewrite rubric.
+- Installable two ways: (a) copy `untell/` into `~/.claude/skills/`; (b) as a plugin dir. README documents both.
 - **Tiered deps so it's low-friction public:**
   - **lite** (zero-ML, default fallback): perplexity+burstiness heuristic via a tiny script — no model download. Weak but instant.
   - **full**: installs `transformers`+`torch`, pulls RoBERTa-OpenAI + MAGE (CPU). Real proxy signal.
@@ -49,11 +49,11 @@ Targets the **max** proxy (multi-detector evasion, report gap #3). Quality gate 
 ## Repo layout
 
 ```
-Humanize/
+Untell/
   LICENSE                       # MIT (public distribution)
   README.md                     # what it is, install (both ways), tiers, ethics/research note
-  pyproject.toml                # extras: [full], [heavy], [eval]; console script `humanize-score`
-  humanize/                     # THE SKILL (this dir is what users install)
+  pyproject.toml                # extras: [full], [heavy], [eval]; console script `untell-score`
+  untell/                     # THE SKILL (this dir is what users install)
     SKILL.md                    # name+description trigger; the loop procedure + rewrite rubric
     scripts/
       score.py                  # ensemble detector scoring → JSON {detector: P(AI), max}; tier auto-detect
@@ -74,13 +74,13 @@ Humanize/
 3. **Preserve-lock** — `preserve.py`: regex citations (APA/IEEE/MLA/numeric) + numbers + quotes, spaCy NER (optional; regex-only fallback) → sentinels; restore. Round-trip tested.
 4. **Quality gate** — `quality.py`: sentence-transformers cosine ≥ 0.76; lite fallback = normalized token-overlap so it runs zero-install.
 5. **SKILL.md** — frontmatter (name/description for triggering) + the loop: lock → score → check stop (`max < threshold` & sim ok) → if not, rewrite with the per-detector scores as explicit feedback per the rubric → cap at N iters → restore → print before/after table. Include the rewrite rubric (burstiness/perplexity/sentence-architecture, preserve meaning + sentinels) and threshold defaults in `references/`.
-6. **CLI helper** — `humanize-score` console entry wrapping `score.py` for manual/CI use.
+6. **CLI helper** — `untell-score` console entry wrapping `score.py` for manual/CI use.
 7. **Eval harness** — `datasets.py` samples AI texts (HC3 bootstrap, RAID real test); `benchmark.py` runs no-op / single-pass / full-loop, computes per-detector pre→post, **bypass rate**, semantic sim, iters; `report.py` writes markdown table. **Success = full-loop bypass rate > single-pass at equal-or-better sim** (the report's thesis). (Loop here scripted to mimic the skill so it's measurable without a human in the seat.)
 
 ## Verification
 
 - **Unit:** each detector returns [0,1] (AI > human on known samples); preserve-lock restores citations/numbers/entities exactly; quality sim ≈1.0 on identical text; `score.py` runs in lite tier with zero ML installed.
-- **Skill smoke:** install `humanize/` into `~/.claude/skills/`, run `/humanize` on a sample AI paragraph → final max-proxy score < initial, sim ≥ 0.76, ≤ N iters, before/after table printed.
+- **Skill smoke:** install `untell/` into `~/.claude/skills/`, run `/untell` on a sample AI paragraph → final max-proxy score < initial, sim ≥ 0.76, ≤ N iters, before/after table printed.
 - **End-to-end eval:** `python -m eval.benchmark --dataset hc3 --n 100` → metrics report; confirm full-loop beats single-pass. Re-run on RAID for the headline number.
 
 ## Risks / honest caveats (README)

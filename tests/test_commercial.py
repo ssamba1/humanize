@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from humanize.detectors import commercial as C
+from untell.detectors import commercial as C
 
 _ALL_ENV = [
     "ORIGINALITY_API_KEY",

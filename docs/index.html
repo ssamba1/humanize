@@ -3,33 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>humanize — Free Open-Source AI Humanizer (Closed-Loop, Detector-Feedback) | Bypass GPTZero, ZeroGPT, Turnitin</title>
+<title>untell — Free Open-Source AI Humanizer (Closed-Loop, Detector-Feedback) | Bypass GPTZero, ZeroGPT, Turnitin</title>
 <meta name="description" content="Free, open-source AI humanizer that closes the loop: iteratively rewrites AI-generated text against live AI-detector scores (GPTZero, ZeroGPT, Originality.ai, Turnitin, Copyleaks) while preserving your meaning, citations and facts. Claude Code skill + Python CLI. MIT.">
-<meta name="keywords" content="ai humanizer, free ai humanizer, humanize ai text, bypass gptzero, bypass turnitin, bypass ai detection, zerogpt, originality.ai, undetectable ai, open source ai humanizer, claude code skill, detector feedback">
-<link rel="canonical" href="https://ssamba1.github.io/humanize/">
+<meta name="keywords" content="ai humanizer, free ai humanizer, humanize ai text, untell, bypass gptzero, bypass turnitin, bypass ai detection, zerogpt, originality.ai, undetectable ai, open source ai humanizer, claude code skill, detector feedback">
+<link rel="canonical" href="https://ssamba1.github.io/untell/">
 <meta name="theme-color" content="#0d1117">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="humanize — the open-source AI humanizer that closes the loop">
+<meta property="og:title" content="untell — the open-source AI humanizer that closes the loop">
 <meta property="og:description" content="Iteratively rewrites AI text against live detector scores until it reads human — while keeping your meaning, citations and facts intact. Free, open source, honest. Live-proven 100%→0% on ZeroGPT.">
-<meta property="og:url" content="https://ssamba1.github.io/humanize/">
-<meta property="og:image" content="https://ssamba1.github.io/humanize/og.png">
+<meta property="og:url" content="https://ssamba1.github.io/untell/">
+<meta property="og:image" content="https://ssamba1.github.io/untell/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="humanize — the open-source AI humanizer that closes the loop">
+<meta name="twitter:title" content="untell — the open-source AI humanizer that closes the loop">
 <meta name="twitter:description" content="Rewrites AI text against live detector scores while preserving meaning, citations & facts. Free, open source, honest. Live-proven 100%→0% on ZeroGPT.">
-<meta name="twitter:image" content="https://ssamba1.github.io/humanize/og.png">
+<meta name="twitter:image" content="https://ssamba1.github.io/untell/og.png">
 
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  "name": "humanize",
+  "name": "untell",
   "description": "Open-source, closed-loop AI-text humanizer: iteratively rewrites text against a multi-detector ensemble using each detector's score as feedback, gated on semantic meaning preservation and citation locking. Packaged as a Claude Code skill and a Python CLI.",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "Windows, macOS, Linux",
   "softwareVersion": "0.1.0",
-  "url": "https://github.com/ssamba1/humanize",
-  "downloadUrl": "https://github.com/ssamba1/humanize",
+  "url": "https://github.com/ssamba1/untell",
+  "downloadUrl": "https://github.com/ssamba1/untell",
   "license": "https://opensource.org/licenses/MIT",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
 }
@@ -42,22 +42,22 @@
     {
       "@type": "Question",
       "name": "Is there a free AI humanizer that actually works?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Yes. The lite tier installs with zero dependencies and the browser path optimizes against the live ZeroGPT detector for $0 (measured 100% to 0% AI). No tool can honestly promise it passes every commercial detector forever; humanize reports the real per-detector score instead of a fake '99% human' claim." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. The lite tier installs with zero dependencies and the browser path optimizes against the live ZeroGPT detector for $0 (measured 100% to 0% AI). No tool can honestly promise it passes every commercial detector forever; untell reports the real per-detector score instead of a fake '99% human' claim." }
     },
     {
       "@type": "Question",
-      "name": "Does humanize bypass GPTZero, ZeroGPT, Turnitin and Originality.ai?",
-      "acceptedAnswer": { "@type": "Answer", "text": "It optimizes and verifies against them. ZeroGPT is built into the free browser path and live-proven. GPTZero, Originality.ai, Turnitin-class, Copyleaks, Winston and Sapling are wired as key-gated commercial adapters; the loop drives the maximum score across every configured checker below threshold. Originality.ai is the hardest; humanize does not claim to beat it without your API key to prove it." }
+      "name": "Does untell bypass GPTZero, ZeroGPT, Turnitin and Originality.ai?",
+      "acceptedAnswer": { "@type": "Answer", "text": "It optimizes and verifies against them. ZeroGPT is built into the free browser path and live-proven. GPTZero, Originality.ai, Turnitin-class, Copyleaks, Winston and Sapling are wired as key-gated commercial adapters; the loop drives the maximum score across every configured checker below threshold. Originality.ai is the hardest; untell does not claim to beat it without your API key to prove it." }
     },
     {
       "@type": "Question",
       "name": "Will an AI humanizer ruin my meaning, citations or numbers?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Not with humanize. A semantic-similarity gate rejects rewrites that drift from the original meaning, and preserve-lock freezes citations, numbers, quotes, URLs and named entities byte-for-byte. It refuses the meaning-breaking rewrites that make other humanizers inject errors or reverse facts." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Not with untell. A semantic-similarity gate rejects rewrites that drift from the original meaning, and preserve-lock freezes citations, numbers, quotes, URLs and named entities byte-for-byte. It refuses the meaning-breaking rewrites that make other humanizers inject errors or reverse facts." }
     },
     {
       "@type": "Question",
-      "name": "How is humanize different from Undetectable.ai, QuillBot or WriteHuman?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Those are closed SaaS that do a single blind pass and report a fake binary verdict. humanize is open source, runs a closed detector-feedback loop, optimizes against multiple real detectors at once, gates on meaning preservation, and gives an honest, reproducible per-detector score you can audit and run yourself." }
+      "name": "How is untell different from Undetectable.ai, QuillBot or WriteHuman?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Those are closed SaaS that do a single blind pass and report a fake binary verdict. untell is open source, runs a closed detector-feedback loop, optimizes against multiple real detectors at once, gates on meaning preservation, and gives an honest, reproducible per-detector score you can audit and run yourself." }
     }
   ]
 }
@@ -99,13 +99,14 @@
 </head>
 <body>
 <header class="wrap">
-  <a href="https://github.com/ssamba1/humanize"><img src="og.png" alt="humanize — the open-source AI humanizer that closes the loop"></a>
+  <a href="https://github.com/ssamba1/untell"><img src="og.png" alt="untell — the open-source AI humanizer that closes the loop"></a>
   <h1>The open-source AI humanizer that <em>closes the loop</em></h1>
   <p class="lede">Iteratively rewrites AI-generated text against <strong>live AI-detector scores</strong> until it reads human — while keeping your <strong>meaning, citations and facts</strong> intact. Free. Open source. Honest about what it can and can't do.</p>
-  <a class="cta" href="https://github.com/ssamba1/humanize">⭐ View on GitHub</a>
-  <a class="cta alt" href="https://github.com/ssamba1/humanize#-quick-start">Quick start</a>
+  <a class="cta" href="https://github.com/ssamba1/untell">⭐ View on GitHub</a>
+  <a class="cta alt" href="demo.html">Try the free AI detector</a>
+  <a class="cta alt" href="https://github.com/ssamba1/untell#-quick-start">Quick start</a>
   <div class="badges">
-    <img src="https://img.shields.io/github/stars/ssamba1/humanize?style=social" alt="GitHub stars">
+    <img src="https://img.shields.io/github/stars/ssamba1/untell?style=social" alt="GitHub stars">
     <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT">
     <img src="https://img.shields.io/badge/python-3.9%2B-blue.svg" alt="Python 3.9+">
     <img src="https://img.shields.io/badge/Claude%20Code-skill-8A2BE2.svg" alt="Claude Code skill">
@@ -122,14 +123,14 @@
 
   <h2>Quick start</h2>
   <p><strong>As a Claude Code skill</strong> (zero install):</p>
-  <pre><code>git clone https://github.com/ssamba1/humanize
-cp -r humanize/humanize ~/.claude/skills/humanize
+  <pre><code>git clone https://github.com/ssamba1/untell
+cp -r untell/untell ~/.claude/skills/untell
 # then in Claude Code:
-/humanize &lt;your text or a file path&gt;</code></pre>
+/untell &lt;your text or a file path&gt;</code></pre>
   <p><strong>As a Python CLI:</strong></p>
   <pre><code>pip install -e ".[full]"
-humanize-loop  "Your AI-sounding paragraph here."   # rewrite until it passes
-humanize-verify --file draft.txt                    # honest pass/fail per detector</code></pre>
+untell-loop  "Your AI-sounding paragraph here."   # rewrite until it passes
+untell-verify --file draft.txt                    # honest pass/fail per detector</code></pre>
 
   <h2>Why it works where blind paraphrasers fail</h2>
   <div class="grid">
@@ -142,7 +143,7 @@ humanize-verify --file draft.txt                    # honest pass/fail per detec
   <h2>The most complete open humanizer</h2>
   <p>We surveyed ~110 open-source humanizer repos. None combine all four of: a real evasion approach validated against multiple live detectors, a meaning-preservation verifier, an inference-time detector-feedback loop, and a user-installable package. This is the repo that does.</p>
   <table>
-    <tr><th>Capability</th><th>humanize</th><th>lynote (1.4k★)</th><th>patina (196★)</th><th>StealthHumanizer (58★)</th></tr>
+    <tr><th>Capability</th><th>untell</th><th>lynote (1.4k★)</th><th>patina (196★)</th><th>StealthHumanizer (58★)</th></tr>
     <tr><td>Detector-feedback loop</td><td class="y">✅</td><td class="n">❌</td><td>◑</td><td>◑</td></tr>
     <tr><td>Real detectors in the loop</td><td class="y">✅</td><td class="n">❌</td><td class="n">❌</td><td class="n">❌</td></tr>
     <tr><td>Commercial adapters (6)</td><td class="y">✅</td><td class="n">❌</td><td class="n">❌</td><td class="n">❌</td></tr>
@@ -150,22 +151,22 @@ humanize-verify --file draft.txt                    # honest pass/fail per detec
     <tr><td>Live bypass proof</td><td class="y">✅</td><td class="n">❌</td><td class="n">❌</td><td class="n">❌</td></tr>
     <tr><td>pip + Claude skill</td><td class="y">✅</td><td>pip</td><td>✅</td><td>web app</td></tr>
   </table>
-  <p class="note">Stars are not capability — the highest-starred repos win on SEO, not architecture. Full evidenced breakdown (and the one place we're honestly not #1): <a href="https://github.com/ssamba1/humanize/blob/main/docs/why-best-open-repo.md">docs/why-best-open-repo.md</a>.</p>
+  <p class="note">Stars are not capability — the highest-starred repos win on SEO, not architecture. Full evidenced breakdown (and the one place we're honestly not #1): <a href="https://github.com/ssamba1/untell/blob/main/docs/why-best-open-repo.md">docs/why-best-open-repo.md</a>.</p>
 
   <h2>FAQ</h2>
-  <details><summary>Is there a free AI humanizer that actually works?</summary><p>Yes — the lite tier installs with zero dependencies and the <code>--browser zerogpt</code> path optimizes against a real detector for $0 (live-measured 100%→0%). No tool can honestly promise it passes every commercial detector forever; the ones claiming "99% human" are lying. humanize reports the real per-detector score instead.</p></details>
+  <details><summary>Is there a free AI humanizer that actually works?</summary><p>Yes — the lite tier installs with zero dependencies and the <code>--browser zerogpt</code> path optimizes against a real detector for $0 (live-measured 100%→0%). No tool can honestly promise it passes every commercial detector forever; the ones claiming "99% human" are lying. untell reports the real per-detector score instead.</p></details>
   <details><summary>Does it bypass GPTZero / ZeroGPT / Turnitin / Originality.ai?</summary><p>It optimizes and verifies against them. ZeroGPT is built into the free browser path and live-proven. GPTZero, Originality.ai, Turnitin-class, Copyleaks, Winston and Sapling are key-gated commercial adapters; the loop drives the max across every checker you configure. Originality.ai is the hardest — we don't claim to beat it without your key to prove it.</p></details>
   <details><summary>Will it ruin my meaning, citations or numbers?</summary><p>No. A semantic-similarity gate rejects meaning-drifting rewrites and preserve-lock freezes citations, numbers, quotes, URLs and entities byte-for-byte. Good for academic, legal and ESL writing.</p></details>
-  <details><summary>How is it different from Undetectable.ai / QuillBot / WriteHuman?</summary><p>Those are closed SaaS doing a single blind pass with a fake binary verdict. humanize is open source, runs a closed detector-feedback loop, optimizes against multiple real detectors, gates on meaning, and gives an honest reproducible score you can audit.</p></details>
-  <details><summary>Is this ethical?</summary><p>AI detectors are noisy proxies — they falsely flag non-native English writers at ~61% in some studies. humanize is a research harness and a defense against false positives, not an academic-dishonesty aid.</p></details>
+  <details><summary>How is it different from Undetectable.ai / QuillBot / WriteHuman?</summary><p>Those are closed SaaS doing a single blind pass with a fake binary verdict. untell is open source, runs a closed detector-feedback loop, optimizes against multiple real detectors, gates on meaning, and gives an honest reproducible score you can audit.</p></details>
+  <details><summary>Is this ethical?</summary><p>AI detectors are noisy proxies — they falsely flag non-native English writers at ~61% in some studies. untell is a research harness and a defense against false positives, not an academic-dishonesty aid.</p></details>
 
   <div style="text-align:center;margin:48px 0">
-    <a class="cta" href="https://github.com/ssamba1/humanize">⭐ Star it on GitHub</a>
+    <a class="cta" href="https://github.com/ssamba1/untell">⭐ Star it on GitHub</a>
   </div>
 </main>
 
 <footer class="wrap">
-  <p>humanize · open-source AI humanizer · <a href="https://github.com/ssamba1/humanize">GitHub</a> · <a href="https://github.com/ssamba1/humanize/blob/main/LICENSE">MIT License</a><br>
+  <p>untell · open-source AI humanizer · <a href="https://github.com/ssamba1/untell">GitHub</a> · <a href="https://github.com/ssamba1/untell/blob/main/LICENSE">MIT License</a><br>
   A research &amp; defensive tool. AI detectors are noisy proxies; don't use this to misrepresent authorship where prohibited.</p>
 </footer>
 </body>

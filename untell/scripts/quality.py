@@ -119,7 +119,7 @@ def passes(a: str, b: str, bar: float | None = None) -> bool:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI: ``python -m humanize.scripts.quality "<orig>" "<rewrite>"`` -> JSON."""
+    """CLI: ``python -m untell.scripts.quality "<orig>" "<rewrite>"`` -> JSON."""
     import json
     import sys
 

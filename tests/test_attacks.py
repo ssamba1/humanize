@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from humanize.attacks import BackTranslator, back_translate
+from untell.attacks import BackTranslator, back_translate
 
 
 def test_noop_when_unavailable(monkeypatch):

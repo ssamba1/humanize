@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from humanize.rewriter import build_rewrite_prompt, get_rewriter
-from humanize.rewriter.base import AnthropicRewriter, OpenAIRewriter
+from untell.rewriter import build_rewrite_prompt, get_rewriter
+from untell.rewriter.base import AnthropicRewriter, OpenAIRewriter
 
 SCORE = {"detectors": {"mage": 0.88, "roberta_openai": 0.71, "fast_detectgpt": 0.40}, "max": 0.88}
 

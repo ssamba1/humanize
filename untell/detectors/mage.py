@@ -55,7 +55,7 @@ class MageDetector:
                 import sys
 
                 print(
-                    f"[humanize] mage unavailable ({type(exc).__name__}: {str(exc)[:120]}); "
+                    f"[untell] mage unavailable ({type(exc).__name__}: {str(exc)[:120]}); "
                     "scoring 0.5 (neutral). Excluded from the ensemble signal.",
                     file=sys.stderr,
                 )

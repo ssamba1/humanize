@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import re
 
-from humanize.scripts.score import DEFAULT_THRESHOLD, score_text
+from untell.scripts.score import DEFAULT_THRESHOLD, score_text
 
 _WORD = re.compile(r"[A-Za-z]+")
 

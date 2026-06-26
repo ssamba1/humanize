@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from humanize.scripts.sentences import main, score_sentences, split_sentences
+from untell.scripts.sentences import main, score_sentences, split_sentences
 
 
 def test_split_sentences():

@@ -19,8 +19,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from humanize.scripts.quality import recommended_bar, similarity
-from humanize.scripts.score import DEFAULT_THRESHOLD, score_text
+from untell.scripts.quality import recommended_bar, similarity
+from untell.scripts.score import DEFAULT_THRESHOLD, score_text
 
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
 
@@ -181,14 +181,14 @@ def api_loop(
 ) -> LoopResult:
     """Closed loop driven by a real hosted-LLM rewriter when one is configured.
 
-    Identical control flow to ``full_loop`` but the rewrite step calls ``humanize.rewriter`` (the
+    Identical control flow to ``full_loop`` but the rewrite step calls ``untell.rewriter`` (the
     actual Claude/OpenAI rewriter the skill would use) instead of the scripted stand-in. With no
     SDK/key configured it transparently falls back to the scripted ``rewrite`` so the strategy is
     always runnable (and the benchmark never hard-requires network).
     """
     if sim_bar is None:
         sim_bar = recommended_bar()
-    from humanize.rewriter import get_rewriter
+    from untell.rewriter import get_rewriter
 
     rw = get_rewriter()
     pre = score_text(text, tier=tier, threshold=threshold)

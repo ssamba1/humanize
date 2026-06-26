@@ -1,7 +1,7 @@
 # Training — the GPU moat (RL-against-ensemble + alignment)
 
 The one capability no other open repo combines with the rest of our stack: a small model RL-trained
-to humanize-by-default, so its paraphrases evade our **whole detector ensemble in a single forward
+to untell-by-default, so its paraphrases evade our **whole detector ensemble in a single forward
 pass** (no inference loop) while preserving meaning. StealthRL (arXiv 2602.08934) shows such policies
 **transfer to detectors they never trained on** — i.e. they beat detectors that don't exist yet.
 
@@ -27,7 +27,7 @@ Plain GRPO-vs-one-detector is the floor. The strongest pipeline for us:
 1. **Distill our own loop (the edge).** `python -m training.distill --dataset raid --n 2000 --tier full`
    runs our Claude + detector-feedback loop (a strong teacher), keeps outputs that pass the ensemble +
    keep meaning, and writes SFT pairs. Most repos have no teacher this good.
-2. **SFT** a small model (Qwen2.5-0.5B–3B) on that JSONL → a fast model that already humanizes well.
+2. **SFT** a small model (Qwen2.5-0.5B–3B) on that JSONL → a fast model that already untells well.
 3. **GRPO / DPO refine** (`rl_humanizer.py`) against the **broad, hard** ensemble (RADAR + Binoculars +
    commercial) with the **multi-objective reward** (`reward.humanness_reward` = evasion + meaning +
    fluency) — the impossibility-triangle win competitors miss (they reward only evasion → quality rots).

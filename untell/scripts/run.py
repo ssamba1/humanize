@@ -1,8 +1,8 @@
-"""Headless humanize loop — run the full lock -> score -> rewrite -> restore loop as a CLI.
+"""Headless untell loop — run the full lock -> score -> rewrite -> restore loop as a CLI.
 
 Inside Claude Code the SKILL.md procedure drives the loop with Claude as the rewriter. This module
-is the *standalone* path: a `humanize-loop` console command (and `humanize_text` API) that runs the
-same loop programmatically using a hosted-LLM rewriter (``humanize.rewriter``). It reuses the exact
+is the *standalone* path: a `untell-loop` console command (and `untell_text` API) that runs the
+same loop programmatically using a hosted-LLM rewriter (``untell.rewriter``). It reuses the exact
 same scripts the skill calls — preserve-lock, the detector ensemble, and the quality gate — so the
 two paths stay behaviourally identical.
 
@@ -16,10 +16,10 @@ import argparse
 import json
 import sys
 
-from humanize.rewriter import get_rewriter
-from humanize.scripts.preserve import lock, restore
-from humanize.scripts.quality import method, recommended_bar, similarity
-from humanize.scripts.score import DEFAULT_THRESHOLD, score_text
+from untell.rewriter import get_rewriter
+from untell.scripts.preserve import lock, restore
+from untell.scripts.quality import method, recommended_bar, similarity
+from untell.scripts.score import DEFAULT_THRESHOLD, score_text
 
 
 def _browser_scorer(sites: list[str], mapping: dict, threshold: float):
@@ -29,8 +29,8 @@ def _browser_scorer(sites: list[str], mapping: dict, threshold: float):
     drives the **max** across them — so the loop must beat ALL configured detectors, not just the
     weakest (the closest thing to "foolproof" we can do for free). Returns None if none are available.
     """
-    from humanize.browser_check import get_browser_checker
-    from humanize.scripts.preserve import restore
+    from untell.browser_check import get_browser_checker
+    from untell.scripts.preserve import restore
 
     checkers = []
     for site in sites:
@@ -65,7 +65,7 @@ def _browser_scorer(sites: list[str], mapping: dict, threshold: float):
     return _score
 
 
-def humanize_text(
+def untell_text(
     text: str,
     tier: str = "full",
     threshold: float = DEFAULT_THRESHOLD,
@@ -97,12 +97,12 @@ def humanize_text(
     if rw is None:
         return {
             "error": "no rewriter configured — install .[api] and set ANTHROPIC_API_KEY or "
-            "OPENAI_API_KEY, or use the /humanize Claude skill (Claude is the rewriter).",
+            "OPENAI_API_KEY, or use the /untell Claude skill (Claude is the rewriter).",
             "final": text,
         }
 
     if scrub:  # strip any hidden watermark / zero-width / homoglyph chars before we start
-        from humanize.attacks import scrub_hidden
+        from untell.attacks import scrub_hidden
 
         text = scrub_hidden(text)
 
@@ -138,7 +138,7 @@ def humanize_text(
         # Targeted feedback: name the specific sentences that read as AI (cheap lite scoring), so the
         # rewriter fixes only those instead of re-rolling the whole text (fewer iters, less drift).
         try:
-            from humanize.scripts.sentences import score_sentences
+            from untell.scripts.sentences import score_sentences
 
             best_score = {
                 **best_score,
@@ -171,7 +171,7 @@ def humanize_text(
     # Optional cheap CPU polish: surgical word-importance substitution to shave a bit more signal.
     if polish:
         try:
-            from humanize.attacks import surgical_substitute
+            from untell.attacks import surgical_substitute
 
             polished = surgical_substitute(best_masked, tier="lite", threshold=threshold)["text"]
             if score(polished)["max"] <= best_score["max"]:
@@ -199,7 +199,7 @@ def _render(result: dict) -> str:
     if "error" in result:
         return f"ERROR: {result['error']}"
     pre, post = result["pre"], result["post"]
-    lines = ["# humanize result", ""]
+    lines = ["# untell result", ""]
     lines.append(f"tier={result['tier']}  iterations={result['iterations']}  stopped={result['stopped']}")
     lines.append(f"max P(AI): {pre['max']:.3f} -> {post['max']:.3f}  (threshold {post['threshold']})")
     lines.append(f"similarity: {result['similarity']:.3f} (bar {result['sim_bar']}, {result['quality_metric']})")
@@ -220,11 +220,11 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
-    from humanize._env import load_env
+    from untell._env import load_env
 
     load_env()  # pick up ANTHROPIC_API_KEY / commercial keys from a .env file if present
-    parser = argparse.ArgumentParser(prog="humanize-loop", description="Run the headless humanize loop.")
-    parser.add_argument("text", nargs="?", help="text to humanize (or --file / stdin)")
+    parser = argparse.ArgumentParser(prog="untell-loop", description="Run the headless untell loop.")
+    parser.add_argument("text", nargs="?", help="text to untell (or --file / stdin)")
     parser.add_argument("--file", "-f", help="read text from this file")
     parser.add_argument("--tier", default="full", choices=["lite", "full", "heavy", "commercial"])
     parser.add_argument("--threshold", "-t", type=float, default=DEFAULT_THRESHOLD)
@@ -260,7 +260,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.file:
-        from humanize.scripts.io_utils import read_file
+        from untell.scripts.io_utils import read_file
 
         text = read_file(args.file)  # .txt / .docx / .pdf
     elif args.text:
@@ -271,7 +271,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"error": "empty input"}))
         return 2
 
-    result = humanize_text(
+    result = untell_text(
         text,
         tier=args.tier,
         threshold=args.threshold,

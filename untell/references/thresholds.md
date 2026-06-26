@@ -1,6 +1,6 @@
 # Thresholds & loop defaults
 
-These are the knobs the `humanize` loop uses. Override per-run if the user asks.
+These are the knobs the `untell` loop uses. Override per-run if the user asks.
 
 | Parameter | Default | Meaning | Rationale |
 |---|---|---|---|
@@ -19,7 +19,7 @@ These are the knobs the `humanize` loop uses. Override per-run if the user asks.
 
 ## Reading the score JSON
 
-`humanize-score` / `score.py` emit:
+`untell-score` / `score.py` emit:
 
 - `tier` — `lite` (heuristic, weak), `full` (RoBERTa-OpenAI + MAGE + GPT-2 PPL, real CPU signal),
   or `heavy` (adds Binoculars, GPU). Always report which tier ran.

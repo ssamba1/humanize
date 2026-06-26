@@ -7,10 +7,10 @@ import json
 import pytest
 
 from eval.benchmark import main as bench_main
-from humanize.scripts.preserve import lock, restore
-from humanize.scripts.preserve import main as preserve_main
-from humanize.scripts.quality import main as quality_main
-from humanize.scripts.score import main as score_main
+from untell.scripts.preserve import lock, restore
+from untell.scripts.preserve import main as preserve_main
+from untell.scripts.quality import main as quality_main
+from untell.scripts.score import main as score_main
 
 
 def test_preserve_restore_cli_roundtrip(capsys):
@@ -62,7 +62,7 @@ def test_benchmark_main_writes_markdown(tmp_path, capsys):
     rc = bench_main(["--dataset", "builtin", "--n", "3", "--tier", "lite", "--out", str(out)])
     assert rc == 0
     body = out.read_text(encoding="utf-8")
-    assert "humanize benchmark" in body
+    assert "untell benchmark" in body
 
 
 def test_benchmark_main_rejects_unknown_strategy():
@@ -71,7 +71,7 @@ def test_benchmark_main_rejects_unknown_strategy():
 
 
 def test_score_text_survives_detector_exception(monkeypatch):
-    from humanize.scripts import score as score_mod
+    from untell.scripts import score as score_mod
 
     class Boom:
         name = "boom"
