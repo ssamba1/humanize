@@ -73,10 +73,11 @@ score the text and lock your facts. Zero dependencies (lite tier).
 /plugin install untell@untell
 ```
 
-**As a Python package:**
+**As a Python package** (`pip install untell` lands with the first PyPI release — from source today):
 
 ```bash
-pip install "untell[full]"                        # real detector ensemble on CPU
+git clone https://github.com/ssamba1/untell && cd untell
+pip install -e ".[full]"                          # real detector ensemble on CPU
 untell-loop "Your AI-sounding paragraph here."    # rewrite until it passes
 untell-score "text" --tier full --threshold 0.3   # just score it
 untell-verify --file draft.txt                    # honest pass/fail per detector
@@ -90,7 +91,7 @@ untell-verify --file draft.txt                    # honest pass/fail per detecto
 git clone https://github.com/ssamba1/untell && cp -r untell/untell ~/.claude/skills/untell
 
 # MCP server (Claude Desktop & any MCP client) — exposes score/sentences/untell/verify/scrub as tools:
-pip install "untell[mcp]" && untell-mcp
+pip install -e ".[mcp]" && untell-mcp     # (pip install "untell[mcp]" once on PyPI)
 ```
 </details>
 
