@@ -18,11 +18,13 @@ option** (30 GPU-hrs/week, reliable); Colab is easiest but flakier.
 %cd untell
 !pip install -q -e ".[train,full]"
 !python -m training.rl_humanizer --smoke               # free dry-run, proves it works (~minutes)
-# real train (3B fits a T4 with 4-bit):
-!python -m training.rl_humanizer --model Qwen/Qwen2.5-3B-Instruct --tier full --steps 500 --load-4bit
+# real train (3B fits a T4 with 4-bit). full-tier step ~100-130s on a T4, so keep steps under the
+# ~12h Kaggle/Colab session wall. Reward plateaus by ~step 90; 150 captures the gains in ~5h:
+!python -m training.rl_humanizer --model Qwen/Qwen2.5-3B-Instruct --tier full --steps 150 --load-4bit
 # or DPO (often steadier): !python -m training.dpo_humanizer --model Qwen/Qwen2.5-3B-Instruct --tier full --load-4bit
 ```
-3. Download `out/rl-humanizer` from the notebook's Output. Done — $0.
+3. Download `out/rl-humanizer` from the notebook's Output. Done — $0. The trainer checkpoints every
+   25 steps, so a session killed at the wall still leaves a usable adapter (`out/rl-humanizer/checkpoint-*`).
 
 ## Google Colab (easiest)
 - colab.research.google.com → Runtime → Change runtime type → **T4 GPU**.

@@ -76,6 +76,14 @@ def train(
         learning_rate=1e-5,
         bf16=True,
         logging_steps=10,
+        # Shorter completions: faster generation AND far faster reward scoring (the ensemble's
+        # Longformer/MAGE detector cost scales with input length). Halving this ~halves step time.
+        max_completion_length=64 if smoke else 128,
+        # Checkpoint mid-run so a session that hits the GPU-host wall (Kaggle/Colab cap ~12h) still
+        # leaves a usable adapter on disk. Without this a killed run produces nothing.
+        save_strategy="steps",
+        save_steps=25,
+        save_total_limit=2,
     )
     lora = LoraConfig(r=32, lora_alpha=64, target_modules="all-linear", task_type="CAUSAL_LM")
     trainer = GRPOTrainer(model=model, reward_funcs=reward_fn, args=cfg, train_dataset=dataset, peft_config=lora)
