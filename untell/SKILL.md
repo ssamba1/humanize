@@ -36,18 +36,19 @@ the scripts auto-detect and use it; you don't change anything. (If `pip install`
 `untell-score` / `untell-sentences` / `untell-verify` console commands also work from any cwd.)
 
 **Pick the right Python interpreter.** The full detector tier needs `torch`/`transformers` in the
-interpreter you invoke. Before the first script call, choose `PY` in this order and use it for every
-`python scripts/*.py` below:
-1. `$UNTELL_PYTHON` if it is set;
-2. a project virtualenv if one exists — `./.venv/Scripts/python.exe` (Windows) or `./.venv/bin/python`
-   (macOS/Linux); likewise `./venv/...`;
+interpreter you invoke. Commands run from the skill directory, so resolve the interpreter to an
+**absolute path** and use it for every `python scripts/*.py` call below. Choose, in order:
+1. `$UNTELL_PYTHON` if set — the reliable override; point it at a venv that has `.[full]` installed;
+2. a virtualenv in the **user's project directory** (where they invoked `/untell` — *not* the skill
+   dir): `<project>/.venv/Scripts/python.exe` (Windows) or `<project>/.venv/bin/python` (macOS/Linux);
+   likewise `<project>/venv/...`;
 3. otherwise plain `python`.
 
 A bare `python` is often a system/conda base whose ML stack is broken (e.g. a NumPy 2.x ↔ torch
-mismatch), which silently drops you to the weak **lite** tier. The scripts now report this honestly:
-if `score` returns `"tier": "lite"` with a `warning` / `failed_detectors` when you wanted full, the
-interpreter lacks a working ML stack — re-run with a venv python that has `.[full]` installed (see the
-README "Troubleshooting" section), and tell the user their detectors were excluded, not silently faked.
+mismatch), which silently drops you to the weak **lite** tier. The scripts report this honestly: if
+`score` returns `"tier": "lite"` with a `warning` / `failed_detectors` when you wanted full, that
+interpreter lacks a working ML stack — re-run with a venv python that has `.[full]` (README
+"Troubleshooting"), and tell the user the detectors were **excluded**, not silently faked at 0.5.
 
 ## The loop
 
