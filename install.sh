@@ -3,7 +3,9 @@
 #   curl -fsSL https://raw.githubusercontent.com/ssamba1/untell/main/install.sh | sh
 set -e
 
-REPO="https://github.com/ssamba1/untell"
+# Source repo; override with UNTELL_REPO (a URL or a local path) — used by CI to
+# install from the checked-out copy instead of the published main branch.
+REPO="${UNTELL_REPO:-https://github.com/ssamba1/untell}"
 DEST="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}/untell"
 TMP="$(mktemp -d)"
 

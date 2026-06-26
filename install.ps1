@@ -2,7 +2,9 @@
 #   irm https://raw.githubusercontent.com/ssamba1/untell/main/install.ps1 | iex
 $ErrorActionPreference = "Stop"
 
-$repo = "https://github.com/ssamba1/untell"
+# Source repo; override with $env:UNTELL_REPO (a URL or a local path) — used by CI to
+# install from the checked-out copy instead of the published main branch.
+$repo = if ($env:UNTELL_REPO) { $env:UNTELL_REPO } else { "https://github.com/ssamba1/untell" }
 $skillsDir = if ($env:CLAUDE_SKILLS_DIR) { $env:CLAUDE_SKILLS_DIR } else { Join-Path $env:USERPROFILE ".claude\skills" }
 $dest = Join-Path $skillsDir "untell"
 $tmp  = Join-Path $env:TEMP ("untell-" + [guid]::NewGuid().ToString())
