@@ -20,16 +20,24 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install (lite tier + dev tools only)
+      - name: Install (lite tier + dev tools; mcp is pure-python, no models)
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install -e ".[dev,mcp]"
 
       - name: Lint
         run: ruff check .
 
       - name: Test (lite tier, zero ML)
         run: pytest -q
+
+      - name: Console scripts wired (entry points resolve)
+        run: |
+          untell-score "Moreover, the system leverages synergies to facilitate outcomes." --threshold 0.30
+          printf 'This sentence is plainly written. Another one here.\n' | untell-sentences
+          untell-verify --help
+          # untell-mcp/-loop/-prove/-distill launch servers/loops; just assert the entry points exist.
+          command -v untell-loop untell-prove untell-mcp untell-distill
 
   full:
     name: full-tier (torch + real detectors)
@@ -67,10 +75,39 @@ jobs:
           assert "roberta_openai" in names and "mage" in names, names
           PY
 
-      - name: Test (full tier — runs the @full_tier marked tests too)
-        env:
-          HUMANIZE_RUN_FULL_TIER: "1"
+      - name: Test (full tier)
         run: pytest -q
+
+  linux-install:
+    name: linux installer + zero-dep run (install.sh)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Install from the checked-out copy via the POSIX installer (UNTELL_REPO), then run a script
+      # zero-dep from an unrelated cwd. Mirrors windows-install for macOS/Linux parity.
+      - name: Install the skill via install.sh
+        env:
+          UNTELL_REPO: ${{ github.workspace }}
+          CLAUDE_SKILLS_DIR: ${{ runner.temp }}/claude-skills
+        run: sh ./install.sh
+
+      - name: Lite-tier score runs zero-dep from an unrelated cwd
+        env:
+          CLAUDE_SKILLS_DIR: ${{ runner.temp }}/claude-skills
+        run: |
+          set -e
+          score="$CLAUDE_SKILLS_DIR/untell/scripts/score.py"
+          test -f "$score" || { echo "skill not installed: $score missing"; exit 1; }
+          cd /tmp  # prove it runs from an unrelated cwd, no PYTHONPATH
+          python "$score" "Moreover, the framework leverages synergies to facilitate robust outcomes." --threshold 0.30 > out.json
+          cat out.json
+          python -c "import json; j=json.load(open('out.json')); assert j['tier']=='lite', j['tier']; assert j['max'] is not None; print('OK zero-dep lite score, max=', j['max'])"
 
   windows-install:
     name: windows installer + zero-dep run (Windows PowerShell 5.1)

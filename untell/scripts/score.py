@@ -108,6 +108,9 @@ def _read_input(args: argparse.Namespace) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    from untell.scripts.io_utils import configure_utf8_io
+
+    configure_utf8_io()  # UTF-8 stdin/stdout/stderr (Windows defaults to cp1252)
     parser = argparse.ArgumentParser(
         prog="untell-score",
         description="Score text with the local AI-detector ensemble and print JSON.",

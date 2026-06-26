@@ -67,10 +67,9 @@ def _render(v: dict) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    try:
-        sys.stdout.reconfigure(encoding="utf-8")
-    except Exception:
-        pass
+    from untell.scripts.io_utils import configure_utf8_io
+
+    configure_utf8_io()  # UTF-8 stdin/stdout/stderr (Windows defaults to cp1252)
     load_env()
     parser = argparse.ArgumentParser(prog="untell-prove", description=__doc__)
     parser.add_argument("text", nargs="?", help="text to untell + prove (or --file / stdin)")

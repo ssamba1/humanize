@@ -57,28 +57,32 @@ class BinocularsDetector:
             ).eval()
         return BinocularsDetector._tokenizer, BinocularsDetector._observer, BinocularsDetector._performer
 
-    def score(self, text: str) -> float:
+    def score(self, text: str) -> float | None:
+        # None == "no signal" (empty / too short / unavailable): excluded from the aggregate
+        # rather than folded in as a fake neutral 0.5.
         if not self.available() or not text.strip():
-            return 0.5
+            return None
         import torch
 
         tok, observer, performer = self._load()
         enc = tok(text, return_tensors="pt", truncation=True, max_length=512).to("cuda")
         ids = enc["input_ids"]
         if ids.shape[1] < 2:
-            return 0.5
+            return None
         labels = ids[:, 1:]
         with torch.no_grad():
             obs_logits = observer(ids).logits[:, :-1, :].float()
             perf_logits = performer(ids).logits[:, :-1, :].float()
 
             obs_lprobs = torch.log_softmax(obs_logits, dim=-1)
-            log_ppl = -obs_lprobs.gather(-1, labels.unsqueeze(-1)).squeeze(-1).mean()
-
-            # Cross-entropy of performer's predictions against observer's distribution.
-            perf_probs = torch.softmax(perf_logits, dim=-1)
-            x_ppl = -(perf_probs * obs_lprobs).sum(-1).mean()
+            perf_lprobs = torch.log_softmax(perf_logits, dim=-1)
+            # log-perplexity: the *performer* predicting the actual next tokens.
+            log_ppl = -perf_lprobs.gather(-1, labels.unsqueeze(-1)).squeeze(-1).mean()
+            # cross-perplexity: cross-entropy H(observer distribution, performer log-probs) =
+            # -sum_v softmax(observer)_v * log_softmax(performer)_v, matching the reference
+            # implementation (ahans30/Binoculars). Heavy/GPU tier; not exercised on CPU CI.
+            x_ppl = -(obs_lprobs.exp() * perf_lprobs).sum(-1).mean()
 
         binoculars = float(log_ppl / (x_ppl + 1e-8))
-        # Lower Binoculars score => more AI-like; invert through the logistic.
+        # Lower Binoculars score => more AI-like; invert through the logistic (calibration heuristic).
         return clamp01(1.0 / (1.0 + math.exp((binoculars - _CAL_MID) / _CAL_SCALE)))

@@ -3,7 +3,7 @@
   "name": "untell",
   "displayName": "untell",
   "version": "0.1.0",
-  "description": "Humanize AI-generated text via a closed-loop, detector-feedback rewrite. Optimizes against GPTZero, ZeroGPT, Originality.ai and Turnitin while preserving meaning, citations and facts. Research/defensive tool.",
+  "description": "Humanize AI-generated text via a closed-loop, detector-feedback rewrite. Optimizes against GPTZero, ZeroGPT, Originality.ai and other Turnitin-class checkers while preserving meaning, citations and facts. Research/defensive tool.",
   "author": {
     "name": "ssamba1",
     "url": "https://github.com/ssamba1/untell"

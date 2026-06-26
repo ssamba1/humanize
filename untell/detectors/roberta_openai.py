@@ -58,7 +58,7 @@ class RobertaOpenAIDetector:
                 print(
                     f"[untell] roberta_openai failed to load and was EXCLUDED from the ensemble "
                     f"({type(exc).__name__}: {str(exc)[:140]}). "
-                    "Often a NumPy 2.x / torch mismatch — see README troubleshooting.",
+                    "Often a NumPy 2.x / torch mismatch - see README troubleshooting.",
                     file=sys.stderr,
                 )
                 RobertaOpenAIDetector._warned = True

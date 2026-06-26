@@ -63,7 +63,7 @@ class FastDetectGPTDetector:
                 print(
                     f"[untell] fast_detectgpt failed to load and was EXCLUDED from the ensemble "
                     f"({type(exc).__name__}: {str(exc)[:140]}). "
-                    "Often a NumPy 2.x / torch mismatch — see README troubleshooting.",
+                    "Often a NumPy 2.x / torch mismatch - see README troubleshooting.",
                     file=sys.stderr,
                 )
                 FastDetectGPTDetector._warned = True

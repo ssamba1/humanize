@@ -18,8 +18,11 @@ Free. Open source. Honest about what it can and can't do.
 [![Live site](https://img.shields.io/badge/site-ssamba1.github.io%2Funtell-2ea44f.svg)](https://ssamba1.github.io/untell/)
 [![good first issues](https://img.shields.io/github/issues/ssamba1/untell/good%20first%20issue.svg?label=good%20first%20issues&color=7057ff)](https://github.com/ssamba1/untell/labels/good%20first%20issue)
 
-**Beat GPTZero · ZeroGPT · Originality.ai · Turnitin · Copyleaks · Winston · Sapling** — by optimizing
-against them, not guessing. [Why this is the most complete open humanizer →](#-why-this-is-the-best-open-source-ai-humanizer)
+**Optimize against real detectors — with the detector *in the loop*, not blind guessing.** Out of the box it
+beats the **free web checkers** (ZeroGPT, live-proven 100%→0%). To actually beat **GPTZero · Originality.ai ·
+Turnitin-class · Copyleaks**, you wire *their* API into the loop (key-gated, paid) — the bundled **local
+proxies alone do *not* predict those, and we [say so plainly](#honest-caveats)** rather than fake a "99% human."
+[Why this is the most complete open humanizer →](#-why-this-is-the-best-open-source-ai-humanizer)
 
 </div>
 
@@ -127,8 +130,8 @@ Three design choices make it work where blind paraphrasers fail:
 
 ## 🏆 Why this is the best open-source AI humanizer
 
-We surveyed **~110 open-source humanizer repos** (GitHub topics, papers-with-code, the research SOTA). An
-independent survey of the field concluded, verbatim:
+We surveyed **~110 open-source humanizer repos** (GitHub topics, papers-with-code, the research SOTA) as part
+of building this project. That deep-research survey ([`humanizer-research-report.md`](humanizer-research-report.md)) concluded, verbatim:
 
 > *"There is **no** open-source repo that combines (a) a real evasion approach validated against multiple
 > live detectors, (b) a quality/meaning-preservation verifier, (c) an iterative detector-feedback loop at
@@ -166,7 +169,7 @@ actually ran, so you always know how much to trust the number.
 |---|---|---|---|
 | **lite** | *(default — nothing to install)* | perplexity + burstiness heuristic; token-overlap quality | Stdlib only, instant, **weak** — a demo signal, not an evasion claim. |
 | **full** | `pip install -e ".[full]"` | + RoBERTa-OpenAI, HC3-RoBERTa, MAGE, Fast-DetectGPT, GPT-2 perplexity; MiniLM cosine quality | Real proxy signal on CPU. Downloads models on first run. |
-| **+ RADAR** | `HUMANIZE_ENABLE_RADAR=1` (opt-in) | + RADAR — the **paraphrase-robust** detector, the hardest open one to fool | ⚠️ `TrustSafeAI/RADAR-Vicuna-7B` is **non-commercial licensed** — research/eval only. |
+| **+ RADAR** | `UNTELL_ENABLE_RADAR=1` (opt-in) | + RADAR — the **paraphrase-robust** detector, the hardest open one to fool | ⚠️ `TrustSafeAI/RADAR-Vicuna-7B` is **non-commercial licensed** — research/eval only. |
 | **heavy** | `pip install -e ".[heavy]"` | + Binoculars (2×Falcon-7B) | Strongest proxy; GPU recommended. Eval only. |
 | **commercial** | `pip install -e ".[commercial]"` + your keys | + Originality.ai, GPTZero, Winston, Sapling, ZeroGPT, Copyleaks | The real checkers. Key-gated; nothing runs or bills unless you set a key. |
 
@@ -234,7 +237,7 @@ human" are lying. This repo tells you the real per-detector score instead.
 It *optimizes and verifies against* them. ZeroGPT is built into the free browser path and live-proven.
 GPTZero, Originality.ai, Turnitin-class, Copyleaks, Winston and Sapling are wired as **key-gated commercial
 adapters** — the loop drives the max across every checker you configure below threshold. Originality.ai is
-genuinely the hardest (independent tests put most commercial humanizers under ~30% bypass on it); we don't
+genuinely the hardest (the research literature and public benchmarks consistently rank it the toughest to evade); we don't
 claim to beat it without your API key to prove it. Honesty is the point.
 </details>
 
@@ -243,8 +246,8 @@ claim to beat it without your API key to prove it. Honesty is the point.
 
 No — that's the core differentiator. A **semantic-similarity gate** rejects any rewrite that drifts too far
 from the original meaning, and **preserve-lock** freezes citations, numbers, quotes, URLs and named entities
-byte-for-byte. Independent tests found other humanizers inject grammar errors and even reverse facts in ~18%
-of outputs; this one refuses meaning-breaking rewrites by design. Good for academic / legal / ESL writing.
+byte-for-byte. Other humanizers are known to inject grammar errors and even reverse facts when they paraphrase
+blindly; this one refuses meaning-breaking rewrites by design. Good for academic / legal / ESL writing.
 </details>
 
 <details>
@@ -343,6 +346,11 @@ loop — `untell-loop` loads the models once — over many one-off score calls. 
 
 - **Proxy ≠ commercial.** The local detectors approximate; they aren't Originality.ai / Turnitin. The
   ensemble is a *signal*, not a verdict. "Passes all checkers" is unprovable against detectors you don't run.
+- **Local proxies do NOT predict GPTZero / Originality.** Measured: a rewrite the bundled local ensemble rates
+  *low* can still score **100% AI on GPTZero**, which runs dedicated anti-humanizer ("AI Paraphrasing")
+  detection. A low local `max` means "passed the weak local proxies," **not** "undetectable." The only way to
+  optimize for a specific commercial detector is to put **it** in the loop (`--tier commercial` + its API key)
+  — and even then GPTZero/Originality are the hardest and nobody beats them reliably.
 - **lite is a demo.** The zero-install heuristic shows the loop; it's not an evasion claim. The full tier is
   the honest baseline; Binoculars (GPU) is the strongest proxy.
 - **Claude is the rewriter.** Output quality and evasion depend on the running model.
