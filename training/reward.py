@@ -1,18 +1,42 @@
 """Reward function for RL-against-ensemble training (StealthRL / AuthorMist style).
 
-reward = (1 - max P(AI) across our detector ensemble) - meaning-drift penalty
+reward = (1 - P(AI) from the target detector) - meaning-drift penalty - quality penalty
 
-Pure-python over our own detectors + semantic similarity, so it is testable on the lite tier with no
-GPU. The RL trainer (rl_humanizer.py) calls this to score generated paraphrases; train against the
-``full`` tier (or ``commercial`` with keys) to learn a untell-by-default policy.
+By default the target is our local ensemble (`score_text` max). **But the local ensemble does not
+predict commercial detectors** (measured: RADAR 0.008 vs GPTZero 100% on the same humanized text), so
+training against it produces a model that beats the local proxies and still fails GPTZero. To target a
+real detector, train a surrogate (`training/surrogate.py`) and set ``UNTELL_SURROGATE_DIR`` — the reward
+then uses the surrogate's P(AI) instead of the local ensemble, with no other change. That is the
+difference between "learns to fool roberta/hc3" and "learns to fool a model that mimics GPTZero".
+
+Pure-python over the chosen detector + semantic similarity, so it is testable on the lite tier with no
+GPU (the surrogate path needs `.[train]` + a trained surrogate dir).
 """
 
+import os
 import re
 
 from untell.scripts.quality import similarity
 from untell.scripts.score import score_text
 
 _W = re.compile(r"[A-Za-z']+")
+
+_SURROGATE = None  # lazily-loaded SurrogateDetector when UNTELL_SURROGATE_DIR is set
+
+
+def target_ai_score(text: str, tier: str = "full") -> float:
+    """P(AI) from the training target: a GPTZero-mimicking surrogate if `UNTELL_SURROGATE_DIR` is set,
+    else the local detector ensemble (max). Optimizing the surrogate is the only path that transfers
+    to the commercial detector it was distilled from."""
+    sd = os.environ.get("UNTELL_SURROGATE_DIR")
+    if sd:
+        global _SURROGATE
+        if _SURROGATE is None:
+            from training.surrogate import SurrogateDetector
+
+            _SURROGATE = SurrogateDetector(sd)
+        return float(_SURROGATE.score(text))
+    return float(score_text(text, tier=tier)["max"])
 
 
 def fluency(text: str) -> float:
@@ -43,7 +67,7 @@ def humanness_reward(
     """
     if not candidate.strip():
         return -1.0
-    ai = float(score_text(candidate, tier=tier)["max"])
+    ai = target_ai_score(candidate, tier=tier)  # surrogate if UNTELL_SURROGATE_DIR set, else ensemble
     sim = similarity(original, candidate)
     evade = 1.0 - ai
     meaning_penalty = 0.0 if sim >= sim_floor else (sim_floor - sim) * 2.0
