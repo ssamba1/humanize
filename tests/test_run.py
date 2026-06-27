@@ -92,6 +92,37 @@ def test_cli_no_rewriter_exits_nonzero(monkeypatch, capsys):
     assert "ERROR" in capsys.readouterr().out
 
 
+def test_deterministic_rewriter_stops_early_on_stall(monkeypatch):
+    import untell.scripts.run as run_mod
+
+    class _Det:
+        name = "det"
+        deterministic = True  # identical input -> identical output
+
+        def available(self):
+            return True
+
+        def rewrite(self, text, score_result, threshold=0.30):
+            return text  # identity: keeps sentinels, sim 1.0, never improves -> must stall iter 1
+
+    monkeypatch.setattr(run_mod, "get_rewriter", lambda prefer=None: _Det())
+    # threshold=0.0 => never "passes" (max >= 0 always), so only the stall guard can stop the loop.
+    res = untell_text(AI, tier="lite", threshold=0.0, max_iters=5)
+    assert res["stopped"] == "stalled"
+    assert res["iterations"] == 1  # a deterministic no-op rewrite is caught on the first pass
+
+
+def test_stochastic_rewriter_does_not_stall(monkeypatch):
+    import untell.scripts.run as run_mod
+
+    # _GoodRW has no `deterministic` flag, so the stall guard must never fire for it: it runs the
+    # full budget (or passes), never stopping with "stalled".
+    monkeypatch.setattr(run_mod, "get_rewriter", lambda prefer=None: _GoodRW())
+    res = untell_text(AI, tier="lite", threshold=0.0, max_iters=3)
+    assert res["stopped"] != "stalled"
+    assert res["iterations"] == 3
+
+
 def test_cli_rewriter_surgical_runs_with_no_key(monkeypatch, capsys):
     # The whole point of --rewriter surgical: the loop runs at $0 with NO API key and NO policy dir,
     # instead of the "no rewriter configured" error path. (lite tier keeps it fast and offline.)

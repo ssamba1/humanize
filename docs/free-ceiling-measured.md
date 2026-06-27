@@ -96,6 +96,9 @@ tells, you cannot strip the content tell, and the local proxies are a noisy and 
 anti-correlated stand-in for the commercial detectors you actually care about.** The honest product
 stance the rest of the repo already takes is the correct one.
 
-*Numbers produced on CPU with the project's own detector ensemble and rewriters; reproduce with
-`untell-ceiling --rewriter surgical --tier full` and `eval/ceiling.py`. n is small and the corpus is
-formulaic by design; treat these as the first data points in an unmeasured regime, not a benchmark.*
+*Numbers produced on **CPU** with the project's own detector ensemble and rewriters; reproduce with
+`untell-ceiling --rewriter surgical --tier full` and `eval/ceiling.py`. Run on CPU for reproducibility —
+GPU float ops are not bit-exact, so the perplexity detector can drift run-to-run. The surgical rewriter
+is deterministic, so the loop converges in one effective pass and stops early (`stopped: "stalled"`)
+rather than burning all iterations. n is small and the corpus is formulaic by design; treat these as
+the first data points in an unmeasured regime, not a benchmark.*

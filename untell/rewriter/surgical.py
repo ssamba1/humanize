@@ -23,6 +23,9 @@ class SurgicalRewriter:
     """Deterministic CPU rewriter backed by ``surgical_substitute``. Always ``available()``."""
 
     name = "surgical"
+    # Deterministic: identical input -> identical output. The loop uses this to stop early once an
+    # iteration stops changing the text (re-running would be a guaranteed no-op).
+    deterministic = True
 
     def __init__(self, max_subs: int = 12):
         self.max_subs = max_subs

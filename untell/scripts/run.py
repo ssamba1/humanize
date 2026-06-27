@@ -169,6 +169,7 @@ def untell_text(
         # would silently lose a locked citation/number on restore, defeating the whole lock — and
         # (b) holds the meaning-similarity gate. Among the valid ones, pick the lowest detector max,
         # and only adopt it if it does not worsen the running best.
+        prev_masked = best_masked  # to detect a stalled (no-op) iteration below
         cand_best, cand_best_score = None, None
         drew = 0
         for _ in range(max(1, best_of)):
@@ -191,6 +192,13 @@ def untell_text(
             best_masked, best_score = cand_best, cand_best_score
         if _passed(best_score):
             stopped = "passed"
+            break
+        # A deterministic rewriter (e.g. surgical word-substitution) fed identical input produces
+        # identical output, so once an iteration leaves the working text unchanged, every remaining
+        # iteration is a guaranteed no-op. Stop instead of re-running the (often expensive) rewrite
+        # for the rest of max_iters. Stochastic rewriters (LLM/policy) have no such flag and keep going.
+        if getattr(rw, "deterministic", False) and best_masked == prev_masked:
+            stopped = "stalled"
             break
 
     # Reproducibility guard: re-score the winner a few times; detectors are noisy and a one-off pass
