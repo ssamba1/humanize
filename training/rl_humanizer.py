@@ -75,6 +75,16 @@ def train(
             "UNTELL_SURROGATE_DIR first, or this run optimizes the wrong target."
         )
 
+    # Fail FAST on a bad/missing Hub token: validate auth and create the repo BEFORE the multi-hour
+    # train, not after. A 401 discovered at push time is useless once the ephemeral disk is already
+    # wiped — the exact failure that lost a completed run (trained 4h, push 401'd, session reset).
+    if hub_id:
+        from huggingface_hub import HfApi
+
+        who = HfApi().whoami()  # raises 401 immediately if the token is bad/missing
+        HfApi().create_repo(hub_id, repo_type="model", exist_ok=True, private=True)
+        print(f"HF auth OK as {who['name']} -> will push adapter to {hub_id} after training")
+
     model = _load_model(model_id, load_4bit)
     rows = build_dataset(n=16 if smoke else 2000)
     source_by_prompt = {r["prompt"]: r["source"] for r in rows}
@@ -138,10 +148,9 @@ def train(
             "latest out/checkpoint-* instead if one exists."
         )
 
-    if hub_id:  # push off the ephemeral host so a dying session can't lose the weights
+    if hub_id:  # auth + repo were validated up-front, so this only fails on a real network/disk error
         from huggingface_hub import HfApi
 
-        HfApi().create_repo(hub_id, repo_type="model", exist_ok=True, private=True)
         HfApi().upload_folder(folder_path=out, repo_id=hub_id, repo_type="model")
         print(f"pushed adapter -> https://huggingface.co/{hub_id}")
     return out
